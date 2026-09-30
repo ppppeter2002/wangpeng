@@ -1,4 +1,5 @@
-﻿import { Router } from 'express'
+import { Router } from 'express'
+import { ensureCommissionWallet, topUpCommissionWallet } from '../lib/commission.js'
 import prisma from '../lib/prisma.js'
 
 type WalletRecord = {
@@ -26,7 +27,7 @@ router.get('/wallet', async (request, response) => {
       return
     }
 
-    const wallet = await walletModel.findUnique({ where: { userId } }) as WalletRecord | null
+    const ensured = await ensureCommissionWallet(userId)
     const txns = await txnModel.findMany({
       where: { userId },
       orderBy: { createdAt: 'desc' }
@@ -34,12 +35,42 @@ router.get('/wallet', async (request, response) => {
 
     response.json({
       userId,
-      balance: wallet?.balance ?? 0,
-      totalEarned: wallet?.totalEarned ?? 0,
+      balance: ensured.wallet.balance,
+      totalEarned: ensured.wallet.totalEarned,
+      walletInitialized: ensured.created,
+      signupBonusGranted: ensured.bonusGranted,
       txns
     })
   } catch (error) {
     response.status(500).json({ error: error instanceof Error ? error.message : 'Fetch wallet failed' })
+  }
+})
+
+router.post('/topup', async (request, response) => {
+  try {
+    const { userId, amount } = request.body as {
+      userId?: string
+      amount?: number
+    }
+
+    if (!userId || typeof amount !== 'number') {
+      response.status(400).json({ error: 'userId and amount required' })
+      return
+    }
+
+    const wallet = await topUpCommissionWallet(userId, amount)
+    response.json({
+      success: true,
+      balance: wallet.balance,
+      totalEarned: wallet.totalEarned
+    })
+  } catch (error) {
+    const msg = error instanceof Error ? error.message : 'Topup failed'
+    if (msg === 'INVALID_TOPUP_AMOUNT') {
+      response.status(400).json({ error: 'amount must be positive integer' })
+      return
+    }
+    response.status(500).json({ error: msg })
   }
 })
 
@@ -67,9 +98,10 @@ router.post('/spend', async (request, response) => {
       return
     }
 
-    const wallet = await walletModel.findUnique({ where: { userId } }) as WalletRecord | null
+    const ensured = await ensureCommissionWallet(userId)
+    const wallet = ensured.wallet as WalletRecord
 
-    if (!wallet || wallet.balance < amount) {
+    if (wallet.balance < amount) {
       response.status(400).json({ error: '余额不足' })
       return
     }

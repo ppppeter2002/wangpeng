@@ -4,6 +4,18 @@
     <view class="sub">用佣金购买优秀教案</view>
   </view>
 
+  <view class="card wallet-card">
+    <view class="row wallet-row">
+      <view>
+        <view class="label">当前佣金</view>
+        <view class="wallet-balance">{{walletLoading ? '加载中...' : walletBalance}}</view>
+      </view>
+      <view class="btn btn-ghost btn-inline" bindtap="demoTopup">演示充值 +500</view>
+    </view>
+    <view class="muted" wx:if="{{signupBonusGranted > 0}}">已发放家长注册赠送 {{signupBonusGranted}}</view>
+    <view class="muted" wx:else>累计入账 {{walletTotalEarned}}</view>
+  </view>
+
   <view class="card" wx:for="{{listings}}" wx:key="marketId">
     <view class="row">
       <text class="title">{{item.title || '未命名教案'}}</text>

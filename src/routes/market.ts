@@ -1,4 +1,5 @@
 import { Router } from 'express'
+import { ensureCommissionWallet } from '../lib/commission.js'
 import prisma from '../lib/prisma.js'
 
 const PLATFORM_SHARE = 0
@@ -265,8 +266,10 @@ router.post('/buy', async (request, response) => {
       return
     }
 
-    const buyerWallet = await walletModel.findUnique({ where: { userId: buyerId } }) as WalletRecord | null
-    if (!buyerWallet || buyerWallet.balance < market.price) {
+    const ensuredWallet = await ensureCommissionWallet(buyerId)
+    const buyerWallet = ensuredWallet.wallet as WalletRecord
+
+    if (buyerWallet.balance < market.price) {
       response.status(400).json({ error: '余额不足' })
       return
     }

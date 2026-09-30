@@ -1,7 +1,7 @@
 <view class="page">
   <view class="header">
     <view class="title">📤 上传拆题</view>
-    <view class="sub">粘贴教案正文或上传 txt/md，AI 自动拆题入库</view>
+    <view class="sub">支持粘贴正文、上传 txt/md/pdf/docx，或图片 OCR 后自动拆题入库</view>
   </view>
 
   <view class="form">
@@ -28,7 +28,14 @@
     </view>
 
     <view class="upload-row">
-      <button class="upload-btn" bindtap="onChooseTxt">📂 选 txt/md 文件</button>
+      <button class="upload-btn" bindtap="onChooseDocument">📂 选 txt/md/pdf/docx</button>
+      <button class="upload-btn" bindtap="onChooseImage">🖼️ 图片 OCR</button>
+    </view>
+
+    <view wx:if="{{fileName}}" class="result-card">
+      <view class="result-title">已选择文件</view>
+      <view class="result-row">{{fileName}}</view>
+      <button class="goto-list" bindtap="clearSelectedFile">改回文本模式</button>
     </view>
 
     <button class="submit-btn {{submitting ? 'disabled' : ''}}" bindtap="onSubmit" disabled="{{submitting}}">
@@ -40,6 +47,8 @@
     <view class="result-title">拆题完成</view>
     <view class="result-row">✅ 成功入库：<text class="num">{{result.ingested}}</text> 道</view>
     <view class="result-row">⏭️ 跳过重复：<text class="num">{{result.skipped}}</text> 道</view>
+    <view wx:if="{{result.fileName}}" class="result-row">📎 来源文件：{{result.fileName}}</view>
+    <view wx:if="{{result.ocrUsed}}" class="result-row">🧠 OCR：已启用</view>
     <button class="goto-list" bindtap="goList">查看题库列表 →</button>
   </view>
 </view>

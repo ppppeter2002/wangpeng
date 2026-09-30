@@ -1,0 +1,49 @@
+{
+  "ticketId": "T-008c",
+  "title": "钱包初始化（家长注册送 + 虚拟充值）",
+  "status": "completed",
+  "completedAt": "2026-09-30T13:10:26+08:00",
+  "project": "smart-tutor",
+  "summary": {
+    "filesChanged": [
+      "src/lib/commission.ts (新增 ensureCommissionWallet、topUpCommissionWallet、家长注册赠送 500 逻辑)",
+      "src/routes/commission.ts (GET /wallet 自动补钱包，新增 POST /topup，spend 改为复用 ensureCommissionWallet)",
+      "src/routes/invite.ts (家长邀请码注册成功后立即初始化佣金钱包)",
+      "src/routes/market.ts (购买前确保 buyer 钱包存在，不再因缺少钱包记录直接失败)",
+      "src/routes/wx.ts (家长微信登录链路补做钱包初始化，覆盖历史老用户/新用户)",
+      "wxapp/pages/parent/market/market.js (修正 request 路径，新增余额加载、演示充值、购买后余额刷新)",
+      "wxapp/pages/parent/market/market.wxml (新增钱包余额卡片和演示充值入口)",
+      "wxapp/pages/parent/market/market.wxss (新增钱包卡片样式)",
+      "HANDOFF.md、worklog/status.json (同步当前完成状态)"
+    ],
+    "filesCreated": [
+      "worklog/T-008c.completed.json"
+    ],
+    "modelsAdded": [],
+    "endpointsAdded": [
+      "POST /api/commission/topup"
+    ]
+  },
+  "verification": {
+    "passed": true,
+    "criteria": [
+      "PASS 0 dev server health 正常，GET /api/health 返回 ok=true",
+      "PASS 1 npx tsc --noEmit 通过",
+      "PASS 2 npm run build 通过",
+      "PASS 3 POST /api/auth/auth/register + /api/invite/link + /api/commission/wallet 冒烟成功，新家长注册后余额=500 且存在 parent_signup_bonus 记录",
+      "PASS 4 POST /api/commission/topup 冒烟成功，测试家长余额从 500 增至 800",
+      "PASS 5 POST /api/market/buy 冒烟成功，测试家长购买在售教案后 remainingBalance=750",
+      "PASS 6 POST /api/wx/login(role=parent) 冒烟成功，微信家长链路同样自动初始化余额=500",
+      "PASS 7 wxapp/pages/parent/market 页面已显示余额卡片并提供演示充值入口"
+    ],
+    "failed": [],
+    "userManualSteps": [
+      "在微信开发者工具导入 D:\\大鹏\\smart-tutor\\wxapp，进入家长端教案市场页确认顶部余额卡片展示正常",
+      "使用一个家长账号点击“演示充值 +500”，确认余额即时刷新",
+      "使用家长账号购买一份教案，确认购买成功提示中的余额与页面余额一致",
+      "若要切真服务环境，只改进程环境变量，不提交 .env 真值"
+    ]
+  },
+  "backups": [],
+  "nextSuggestion": "继续推进 T-019（等待服务号资质）或 T-022-step2（服务器/备案/HTTPS/pm2 的人工落地清单）。"
+}

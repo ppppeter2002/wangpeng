@@ -1,5 +1,6 @@
 ﻿import { Prisma } from '@prisma/client'
 import { Router } from 'express'
+import { ensureCommissionWallet } from '../lib/commission.js'
 import prisma from '../lib/prisma.js'
 import { generateInviteCode } from '../lib/invite-code.js'
 
@@ -202,6 +203,7 @@ async function registerUser(requestBody: {
       invitedBy: inviter.id
     }
     const user = await prisma.user.create({ data: createParentData }) as unknown as UserRecord
+    await ensureCommissionWallet(user.id)
 
     await prisma.inviteLink?.update({
       where: { id: inviteLink.id },

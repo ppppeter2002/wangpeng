@@ -1,4 +1,5 @@
 import { Router } from 'express'
+import { ensureCommissionWallet } from '../lib/commission.js'
 import prisma from '../lib/prisma.js'
 import { code2Session, genInviteCode } from '../lib/wx.js'
 
@@ -64,6 +65,10 @@ router.post('/login', async (request, response) => {
         where: { id: user.id },
         data: { phone }
       }) as UserRecord
+    }
+
+    if (user.role === 'parent') {
+      await ensureCommissionWallet(user.id)
     }
 
     response.json({
