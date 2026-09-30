@@ -42,7 +42,7 @@
 
 当前：
 
-- `lastCompleted = T-008c`
+- `lastCompleted = T-022-step2`
 - `nextTicket = T-019 (微信服务号资质，等待公众号资质)`
 
 ## 3. 产品需求（核心）
