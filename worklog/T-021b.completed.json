@@ -1,0 +1,41 @@
+{
+  "ticketId": "T-021b",
+  "title": "pdf/docx/OCR 拆题",
+  "status": "completed",
+  "completedAt": "2026-09-30T13:10:00+08:00",
+  "project": "smart-tutor",
+  "summary": {
+    "filesChanged": [
+      "src/routes/bank.ts (新增 ingest-file 路由，支持 txt/md/pdf/docx/图片 OCR 抽文本后复用现有 AI 拆题与 hash 去重逻辑)",
+      "wxapp/pages/bank/bank-upload/bank-upload.js (新增文档上传、图片 OCR、base64 文件读取与后端 ingest-file 调用)",
+      "wxapp/pages/bank/bank-upload/bank-upload.wxml (上传入口扩展为 txt/md/pdf/docx + 图片 OCR，并显示文件来源与 OCR 状态)",
+      "package.json / package-lock.json (新增 mammoth、pdf-parse 依赖)",
+      "HANDOFF.md、worklog/status.json (同步当前完成状态)"
+    ],
+    "filesCreated": [
+      "worklog/T-021b.completed.json"
+    ],
+    "modelsAdded": [],
+    "endpointsAdded": [
+      "POST /api/bank/ingest-file"
+    ]
+  },
+  "verification": {
+    "passed": true,
+    "criteria": [
+      "PASS 0 dev server health 保持正常",
+      "PASS 1 npm run typecheck 通过",
+      "PASS 2 npm run build 通过",
+      "PASS 3 POST /api/bank/ingest-file 使用 sample.txt 冒烟成功，返回 ingested=2 skipped=0 source=doc",
+      "PASS 4 小程序 bank-upload 页面已支持 txt/md/pdf/docx 与图片 OCR 入口"
+    ],
+    "failed": [],
+    "userManualSteps": [
+      "在微信开发者工具的 wxapp/pages/bank/bank-upload 页面分别选择 docx、pdf、图片各 1 份做真机验证",
+      "若走图片 OCR，请确保当前运行环境已配置 DASHSCOPE_API_KEY",
+      "若导入 docx/pdf 后为空，请检查原文件是否为图片扫描件；扫描件应改走图片 OCR 入口"
+    ]
+  },
+  "backups": [],
+  "nextSuggestion": "优先做钱包初始化；T-019 继续等待公众号资质；服务器/备案类动作继续按 T-022-step2 的人工清单推进。"
+}

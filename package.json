@@ -14,7 +14,9 @@
   "dependencies": {
     "@prisma/client": "^6.16.2",
     "express": "^4.21.2",
+    "mammoth": "^1.13.0",
     "openai": "^7.20.0",
+    "pdf-parse": "^2.4.5",
     "prisma": "^6.16.2"
   },
   "devDependencies": {

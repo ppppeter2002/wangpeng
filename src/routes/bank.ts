@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import prisma from '../lib/prisma.js'
 import { hashQuestion } from '../lib/hash.js'
+import { analyzeImage } from '../lib/vision.js'
 
 type UserRecord = { id: string; role: string; name: string | null }
 
@@ -43,6 +44,16 @@ type IngestQuestion = {
   difficulty?: number
   chapter?: string
   questionType?: string
+}
+
+type IngestTextParams = {
+  text: string
+  subject: string
+  teacherId: string
+  gradeLevel?: number
+  chapter?: string
+  source?: string
+  sourceRef?: string
 }
 
 const bankModel = prisma.questionBank
@@ -121,6 +132,119 @@ async function callHunyuanForQuestions(prompt: string): Promise<IngestQuestion[]
   const list = parsed.questions ?? []
   if (!Array.isArray(list) || list.length === 0) throw new Error('EMPTY_QUESTIONS')
   return list
+}
+
+function buildSplitPrompt(text: string) {
+  return [
+    '你是题库生成器。把下面的文本按章节/知识点拆成多道题目，输出 JSON：',
+    '{ "questions": [ { "question":"", "options":["A. 选项1","B. 选项2","C. 选项3","D. 选项4"], "answer":"A", "explanation":"", "chapter":"", "topic":"", "difficulty":3, "questionType":"single" } ] }',
+    '选择题 options 必须带字母前缀（如 "A. 内容"），answer 只填字母（如 "A"）；填空题 questionType="fill"，options=[]；简答题 questionType="essay"，options=[]。',
+    'difficulty 为 1~5 的整数。每题必须带 chapter 或 topic（章节/知识点）。',
+    '---文本正文---',
+    text
+  ].join('\n')
+}
+
+async function ensureTeacher(teacherId: string) {
+  const teacher = await prisma.user.findUnique({ where: { id: teacherId } }) as UserRecord | null
+  if (!teacher || teacher.role !== 'teacher') {
+    throw new Error('ONLY_TEACHER')
+  }
+}
+
+async function ingestTextContent(params: IngestTextParams) {
+  await ensureTeacher(params.teacherId)
+
+  const apiKey = process.env.HUNYUAN_API_KEY
+  if (!apiKey) {
+    throw new Error('AI 未配置（HUNYUAN_API_KEY 未注入）')
+  }
+
+  const list = await callHunyuanForQuestions(buildSplitPrompt(params.text))
+  const result = await ingestQuestions(list, {
+    teacherId: params.teacherId,
+    subject: params.subject,
+    source: params.source ?? 'doc',
+    sourceRef: params.sourceRef,
+    chapter: params.chapter,
+    gradeLevel: params.gradeLevel
+  })
+
+  return result
+}
+
+function getFileExtension(fileName: string) {
+  const normalized = fileName.trim().toLowerCase()
+  const pieces = normalized.split('.')
+  return pieces.length > 1 ? pieces[pieces.length - 1] : ''
+}
+
+function stripBase64Prefix(fileBase64: string) {
+  const marker = 'base64,'
+  const index = fileBase64.indexOf(marker)
+  return index >= 0 ? fileBase64.slice(index + marker.length) : fileBase64
+}
+
+async function extractTextFromFile(opts: {
+  fileName: string
+  fileBase64: string
+  mimeType?: string
+}): Promise<{ text: string; source: string; ocrUsed: boolean }> {
+  const ext = getFileExtension(opts.fileName)
+  const base64 = stripBase64Prefix(opts.fileBase64)
+
+  if (!base64.trim()) {
+    throw new Error('EMPTY_FILE')
+  }
+
+  if (ext === 'txt' || ext === 'md') {
+    return {
+      text: Buffer.from(base64, 'base64').toString('utf8'),
+      source: 'doc',
+      ocrUsed: false
+    }
+  }
+
+  if (ext === 'docx') {
+    const mammothModule = await import('mammoth')
+    const mammoth = mammothModule.default ?? mammothModule
+    const result = await mammoth.extractRawText({ buffer: Buffer.from(base64, 'base64') })
+    return {
+      text: result.value,
+      source: 'docx',
+      ocrUsed: false
+    }
+  }
+
+  if (ext === 'pdf') {
+    const pdfParseModule = await import('pdf-parse')
+    const parser = new pdfParseModule.PDFParse({ data: Buffer.from(base64, 'base64') })
+    const result = await parser.getText()
+    await parser.destroy()
+    return {
+      text: result.text,
+      source: 'pdf',
+      ocrUsed: false
+    }
+  }
+
+  if (['png', 'jpg', 'jpeg', 'webp', 'bmp'].includes(ext)) {
+    const mimeType = opts.mimeType || `image/${ext === 'jpg' ? 'jpeg' : ext}`
+    const imageDataUrl = opts.fileBase64.startsWith('data:')
+      ? opts.fileBase64
+      : `data:${mimeType};base64,${base64}`
+    const text = await analyzeImage(
+      imageDataUrl,
+      '请执行 OCR，提取图片中的题目、教材或试卷文字。只输出纯文本，不要总结，不要 JSON，不要解释。'
+    )
+    return {
+      text,
+      source: 'ocr',
+      ocrUsed: true
+    }
+  }
+
+  throw new Error(`UNSUPPORTED_FILE_TYPE_${ext || 'unknown'}`)
 }
 
 // 1. POST /upload - 老师手动上传单题（保留兼容）
@@ -321,41 +445,81 @@ router.post('/ingest-text', async (request, response) => {
       response.status(400).json({ error: 'teacherId required' })
       return
     }
-
-    // 校验 teacher
-    const teacher = await prisma.user.findUnique({ where: { id: teacherId } }) as UserRecord | null
-    if (!teacher || teacher.role !== 'teacher') {
-      response.status(403).json({ error: 'only teacher can ingest questions' })
-      return
-    }
-
-    const apiKey = process.env.HUNYUAN_API_KEY
-    if (!apiKey) {
-      response.status(500).json({ error: 'AI 未配置（HUNYUAN_API_KEY 未注入）' })
-      return
-    }
-
-    const prompt = [
-      '你是题库生成器。把下面的文本按章节/知识点拆成多道题目，输出 JSON：',
-      '{ "questions": [ { "question":"", "options":["A. 选项1","B. 选项2","C. 选项3","D. 选项4"], "answer":"A", "explanation":"", "chapter":"", "topic":"", "difficulty":3, "questionType":"single" } ] }',
-      '选择题 options 必须带字母前缀（如 "A. 内容"），answer 只填字母（如 "A"）；填空题 questionType="fill"，options=[]；简答题 questionType="essay"，options=[]。',
-      'difficulty 为 1~5 的整数。每题必须带 chapter 或 topic（章节/知识点）。',
-      '---文本正文---',
-      text
-    ].join('\n')
-
-    const list = await callHunyuanForQuestions(prompt)
-    const result = await ingestQuestions(list, {
-      teacherId,
+    const result = await ingestTextContent({
+      text,
       subject,
-      source: 'doc',
+      teacherId,
+      gradeLevel,
       chapter,
-      gradeLevel
+      source: 'doc'
     })
-
     response.status(201).json({ ...result })
   } catch (error) {
     const msg = error instanceof Error ? error.message : 'ingest text failed'
+    if (msg === 'ONLY_TEACHER') {
+      response.status(403).json({ error: 'only teacher can ingest questions' })
+      return
+    }
+    response.status(500).json({ error: msg })
+  }
+})
+
+// 5. POST /ingest-file - 上传 txt/md/pdf/docx/图片OCR 后拆题入库
+router.post('/ingest-file', async (request, response) => {
+  try {
+    if (!bankModel) {
+      response.status(500).json({ error: 'questionBank model unavailable' })
+      return
+    }
+
+    const { fileName, fileBase64, mimeType, subject, gradeLevel, chapter, teacherId } = request.body as {
+      fileName?: string
+      fileBase64?: string
+      mimeType?: string
+      subject?: string
+      gradeLevel?: number
+      chapter?: string
+      teacherId?: string
+    }
+
+    if (!fileName || !fileBase64 || !subject || !teacherId) {
+      response.status(400).json({ error: 'fileName, fileBase64, subject and teacherId required' })
+      return
+    }
+
+    const extracted = await extractTextFromFile({ fileName, fileBase64, mimeType })
+    if (!extracted.text || extracted.text.trim().length === 0) {
+      response.status(400).json({ error: 'parsed text is empty' })
+      return
+    }
+
+    const result = await ingestTextContent({
+      text: extracted.text,
+      subject,
+      teacherId,
+      gradeLevel,
+      chapter,
+      source: extracted.source,
+      sourceRef: fileName
+    })
+
+    response.status(201).json({
+      ...result,
+      fileName,
+      source: extracted.source,
+      ocrUsed: extracted.ocrUsed,
+      textLength: extracted.text.trim().length
+    })
+  } catch (error) {
+    const msg = error instanceof Error ? error.message : 'ingest file failed'
+    if (msg === 'ONLY_TEACHER') {
+      response.status(403).json({ error: 'only teacher can ingest questions' })
+      return
+    }
+    if (msg.startsWith('UNSUPPORTED_FILE_TYPE_')) {
+      response.status(400).json({ error: msg })
+      return
+    }
     response.status(500).json({ error: msg })
   }
 })
