@@ -33,6 +33,12 @@ Do not import the repository root.
 - `run-tunnel.bat`: named tunnel for `https://api.bbbpeter2025.top`
 - `install-tunnel-service.bat`: installs `cloudflared` as Windows service for autostart
 
+## Production Deployment
+
+- Linux/ICP/Nginx/HTTPS/PM2 guide: `docs/deployment/t022-step2-server-icp-guide.md`
+- Deployment templates: `deploy/`
+- Mini program release checklist: `docs/deployment/wechat-mini-program-release.md`
+
 ## Handoff
 
 Project workflow, worklog rules, and Trae/Codex dispatch format live in `HANDOFF.md`.

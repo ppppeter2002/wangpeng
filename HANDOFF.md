@@ -36,13 +36,14 @@
 - `T-020c` 家长端 + 老师端页面
 - `T-021` 题库汇聚：教案拆题 + 作业同步入库 + `txt/md` 拆题 + `hash` 去重
 - `T-022-prep` 本机 + Cloudflare Tunnel 临时公网化
+- `T-022-step2` Linux 服务器/备案/Nginx/HTTPS/PM2 上线包
 - `T-022-step3` 自有域名 + cloudflared Windows 服务开机自启
 - `T-021b` `pdf/docx/OCR` 拆题
 
 当前：
 
 - `lastCompleted = T-008c`
-- `nextTicket = T-019 (微信服务号资质，等待公众号资质) / T-022-step2 (买服务器+备案指引，用户手动)`
+- `nextTicket = T-019 (微信服务号资质，等待公众号资质)`
 
 ## 3. 产品需求（核心）
 
@@ -123,7 +124,7 @@ ASK：
 
 ## 8. 下一步候选工单
 
-- `T-022-step2`：买 Linux 服务器 + 备案指引 + Nginx/HTTPS/pm2 方案（需要用户购买和实名）
+- `T-022-step2`（已完成）：Linux 服务器 + 备案指引 + Nginx/HTTPS/pm2 上线包（购买和实名仍需用户执行）
 - `T-019`：微信服务号模板消息（等公众号资质）
 - 钱包初始化（已完成）：家长注册送 / 充值虚拟佣金，已打通 `market buy`
 

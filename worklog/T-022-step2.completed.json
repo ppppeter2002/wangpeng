@@ -1,0 +1,46 @@
+{
+  "ticketId": "T-022-step2",
+  "title": "Linux 服务器 + 备案指引 + Nginx/HTTPS/PM2 上线包",
+  "status": "completed",
+  "completedAt": "2026-09-30T14:02:00+08:00",
+  "project": "smart-tutor",
+  "summary": {
+    "filesChanged": [
+      "deploy/bootstrap.sh (改为参数化 Ubuntu 初始化模板，补充 pm2/nginx/证书后续步骤)",
+      "deploy/nginx.smart-tutor.conf (补充上传大小、超时等生产反代配置)",
+      "deploy/README.md (明确部署顺序和各模板用途)",
+      "deploy/smart-tutor.service (增加 /etc/smart-tutor.env 读取，作为不用 PM2 时的兜底模板)",
+      "docs/deployment/t022-step2-server-icp-guide.md (补齐服务器初始化、pm2、nginx、https、微信合法域名的执行顺序)",
+      "README.md (新增 Production Deployment 入口)",
+      "HANDOFF.md、worklog/status.json (同步当前完成状态)"
+    ],
+    "filesCreated": [
+      "deploy/ecosystem.config.cjs",
+      "deploy/smart-tutor.env.example",
+      "deploy/post-deploy-check.sh",
+      "worklog/T-022-step2.completed.json"
+    ],
+    "modelsAdded": [],
+    "endpointsAdded": []
+  },
+  "verification": {
+    "passed": true,
+    "criteria": [
+      "PASS 0 dev server health 保持正常",
+      "PASS 1 npx tsc --noEmit 通过",
+      "PASS 2 npm run build 通过",
+      "PASS 3 deploy/ 目录已包含 bootstrap、pm2 ecosystem、env 模板、nginx 模板、post-deploy-check 脚本",
+      "PASS 4 docs/deployment/t022-step2-server-icp-guide.md 已补齐 Linux 服务器 + ICP + HTTPS + 微信合法域名落地顺序",
+      "PASS 5 HANDOFF.md 与 worklog/status.json 已更新，nextTicket 仅保留 T-019"
+    ],
+    "failed": [],
+    "userManualSteps": [
+      "购买并实名认证 Linux 云服务器，完成域名实名认证和 ICP 提交",
+      "把仓库上传到服务器后按 docs/deployment/t022-step2-server-icp-guide.md 执行 bootstrap、pm2、nginx、https",
+      "备案完成后将微信小程序 request 合法域名切到正式 HTTPS API 域名",
+      "如果要正式切线上流量，再决定是否继续保留当前 Cloudflare Tunnel 作为调试备用链路"
+    ]
+  },
+  "backups": [],
+  "nextSuggestion": "等待公众号/服务号资质后推进 T-019；若先进入真实上线阶段，可直接按本工单文档执行服务器与 ICP 手动落地。"
+}

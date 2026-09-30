@@ -6,6 +6,7 @@ After=network.target
 Type=simple
 User=ubuntu
 WorkingDirectory=/srv/smart-tutor
+EnvironmentFile=-/etc/smart-tutor.env
 Environment=NODE_ENV=production
 Environment=PORT=3000
 ExecStart=/usr/bin/node /srv/smart-tutor/dist/server.js
@@ -14,4 +15,3 @@ RestartSec=5
 
 [Install]
 WantedBy=multi-user.target
-
