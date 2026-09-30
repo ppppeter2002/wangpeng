@@ -1,4 +1,5 @@
 import { Router } from 'express'
+import { createNotification } from '../lib/notification.js'
 import prisma from '../lib/prisma.js'
 
 // 段位链扩展到 8 级
@@ -20,8 +21,6 @@ type SeasonRewardRecord = {
 const seasonModel = prisma.season
 const rewardModel = prisma.seasonReward
 const rankModel = prisma.studentRank
-const notificationModel = prisma.notification
-
 const router = Router()
 
 // 1. POST /create - 创建赛季
@@ -72,7 +71,7 @@ router.get('/current', async (_request, response) => {
 // 3. POST /settle - 结算赛季
 router.post('/settle', async (request, response) => {
   try {
-    if (!seasonModel || !rewardModel || !rankModel || !notificationModel) {
+    if (!seasonModel || !rewardModel || !rankModel) {
       response.status(500).json({ error: 'models unavailable' }); return
     }
     const { seasonId, adminId } = request.body as { seasonId?: string; adminId?: string }
@@ -104,18 +103,21 @@ router.post('/settle', async (request, response) => {
       rewards.push(reward)
 
       // 触发 reward_winner 通知
-      await notificationModel.create({
-        data: {
-          userId: top3[i].studentId,
-          type: 'reward_winner',
-          title: `赛季获奖 - 第${rank}名`,
-          content: `恭喜在「${season.name}」中获得第${rank}名，奖金 ${amount}。请前往领奖页面填写联系方式并上传领奖照片。`,
-          payload: JSON.stringify({ seasonId, rewardId: reward.id, rank, amount }),
-          read: false,
-          channel: 'wechat'
+      await createNotification({
+        userId: top3[i].studentId,
+        type: 'reward_winner',
+        title: `赛季获奖 - 第${rank}名`,
+        content: `恭喜在「${season.name}」中获得第${rank}名，奖金 ${amount}。请前往领奖页面填写联系方式并上传领奖照片。`,
+        payload: {
+          seasonId,
+          rewardId: reward.id,
+          rank,
+          amount,
+          wechatTemplate: {
+            miniprogram: { pagepath: 'pages/parent/notifications/notifications' }
+          }
         }
       })
-      console.log(`[wechat-notify] to=${top3[i].studentId} type=reward_winner season=${seasonId} rank=${rank} amount=${amount}`)
     }
 
     // 更新赛季状态
@@ -135,7 +137,7 @@ router.post('/settle', async (request, response) => {
 // 4. POST /reward/claim - 领奖上传
 router.post('/reward/claim', async (request, response) => {
   try {
-    if (!rewardModel || !notificationModel) { response.status(500).json({ error: 'models unavailable' }); return }
+    if (!rewardModel) { response.status(500).json({ error: 'models unavailable' }); return }
     const { rewardId, contactName, contactPhone, photoUrl } = request.body as {
       rewardId?: string; contactName?: string; contactPhone?: string; photoUrl?: string
     }
@@ -157,18 +159,21 @@ router.post('/reward/claim', async (request, response) => {
     })
 
     // 触发 reward_claimed 通知
-    await notificationModel.create({
-      data: {
-        userId: reward.studentId,
-        type: 'reward_claimed',
-        title: '领奖信息已确认',
-        content: `您的领奖信息已提交确认（第${reward.rank}名，奖金 ${reward.amount}），请等待奖金发放。`,
-        payload: JSON.stringify({ rewardId, rank: reward.rank, amount: reward.amount, status: 'confirmed' }),
-        read: false,
-        channel: 'wechat'
+    await createNotification({
+      userId: reward.studentId,
+      type: 'reward_claimed',
+      title: '领奖信息已确认',
+      content: `您的领奖信息已提交确认（第${reward.rank}名，奖金 ${reward.amount}），请等待奖金发放。`,
+      payload: {
+        rewardId,
+        rank: reward.rank,
+        amount: reward.amount,
+        status: 'confirmed',
+        wechatTemplate: {
+          miniprogram: { pagepath: 'pages/parent/notifications/notifications' }
+        }
       }
     })
-    console.log(`[wechat-notify] to=${reward.studentId} type=reward_claimed rewardId=${rewardId} rank=${reward.rank}`)
 
     response.json({ success: true, rewardId, status: 'confirmed' })
   } catch (error) {

@@ -1,0 +1,55 @@
+{
+  "ticketId": "T-019-prep",
+  "title": "微信服务号模板消息接入准备",
+  "status": "completed",
+  "completedAt": "2026-09-30T15:19:00+08:00",
+  "project": "smart-tutor",
+  "summary": {
+    "filesChanged": [
+      "prisma/schema.prisma (Notification 新增 deliveryStatus / deliveryError / externalMessageId / deliveredAt)",
+      "src/routes/notification.ts (统一走通知 helper，新增服务号 config-status、callback GET/POST 骨架)",
+      "src/routes/assignment.ts、src/routes/season.ts、src/routes/rank.ts、src/routes/pk.ts (业务通知统一改走 createNotification)",
+      "env.example、deploy/smart-tutor.env.example (新增 WX_SERVICE_* 模板配置)",
+      "README.md、HANDOFF.md、worklog/status.json (同步当前完成状态)"
+    ],
+    "filesCreated": [
+      "src/lib/wechat-official.ts",
+      "src/lib/notification.ts",
+      "docs/deployment/t019-service-account-prep.md",
+      "worklog/T-019-prep.completed.json"
+    ],
+    "modelsAdded": [
+      "Notification.deliveryStatus",
+      "Notification.deliveryError",
+      "Notification.externalMessageId",
+      "Notification.deliveredAt"
+    ],
+    "endpointsAdded": [
+      "GET /api/notification/wechat/config-status",
+      "GET /api/notification/wechat/callback",
+      "POST /api/notification/wechat/callback"
+    ]
+  },
+  "verification": {
+    "passed": true,
+    "criteria": [
+      "PASS 0 dev server health 正常，GET /api/health 返回 200",
+      "PASS 1 npx tsc --noEmit 通过",
+      "PASS 2 npm run build 通过",
+      "PASS 3 npx prisma db push --skip-generate 通过",
+      "PASS 4 GET /api/notification/wechat/config-status 返回 appIdConfigured/secretConfigured/tokenConfigured 等布尔状态",
+      "PASS 5 POST /api/notification/send 在未配置 WX_SERVICE_* 时安全降级，返回 deliveryStatus=pending_config，通知仍成功落库",
+      "PASS 6 GET /api/notification/list 已返回 deliveryStatus / deliveryError / externalMessageId / deliveredAt",
+      "PASS 7 GET /api/notification/wechat/callback 在未配置 token 时返回 503，不会误通过校验"
+    ],
+    "failed": [],
+    "userManualSteps": [
+      "公众号 / 服务号资质到位后，在服务器进程环境里补齐 WX_SERVICE_APPID、WX_SERVICE_SECRET、WX_SERVICE_TOKEN、WX_SERVICE_AES_KEY",
+      "在微信公众平台把服务器 URL 指向 https://你的域名/api/notification/wechat/callback",
+      "拿到真实模板 ID 和测试粉丝 openid 后，调用 POST /api/notification/send 验证 deliveryStatus=sent",
+      "若要让业务通知真发，需要在实际 payload 中带入 touser 或先补一张服务号 openid 绑定表"
+    ]
+  },
+  "backups": [],
+  "nextSuggestion": "等待公众号 / 服务号资质、模板 ID、粉丝 openid 后继续完成 T-019 真发送；在此之前其余通知业务不会因微信配置缺失而崩溃。"
+}

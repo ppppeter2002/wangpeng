@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import prisma from '../lib/prisma.js'
 import { generateQuestions } from '../lib/ai.js'
+import { createNotification } from '../lib/notification.js'
 
 // 段位链：黑铁 → 青铜 → 白银 → 黄金 → 铂金 → 钻石
 const TIERS = ['黑铁', '青铜', '白银', '黄金', '铂金', '钻石']
@@ -68,8 +69,6 @@ const testModel = prisma.promotionTest
 const bankModel = prisma.questionBank
 const submissionModel = prisma.assignmentSubmission
 const assignmentModel = prisma.assignment
-const notificationModel = prisma.notification
-
 const router = Router()
 
 function nextTier(current: string): string | null {
@@ -307,7 +306,7 @@ router.post('/promotion-test/start', async (request, response) => {
 // 4. POST /promotion-test/submit - 批改并升级
 router.post('/promotion-test/submit', async (request, response) => {
   try {
-    if (!testModel || !rankModel || !notificationModel) {
+    if (!testModel || !rankModel) {
       response.status(500).json({ error: 'models unavailable' })
       return
     }
@@ -365,18 +364,22 @@ router.post('/promotion-test/submit', async (request, response) => {
     const notifContent = passed
       ? `恭喜！您已从${test.fromTier}段晋级为${test.toTier}段，得分${score}`
       : `本次晋级测试未通过，得分${score}（需≥${Math.round(PASS_THRESHOLD * 100)}），再接再厉`
-    await notificationModel.create({
-      data: {
-        userId: test.studentId,
-        type: notifType,
-        title: notifTitle,
-        content: notifContent,
-        payload: JSON.stringify({ testId, score, passed, fromTier: test.fromTier, toTier: test.toTier }),
-        read: false,
-        channel: 'wechat'
+    await createNotification({
+      userId: test.studentId,
+      type: notifType,
+      title: notifTitle,
+      content: notifContent,
+      payload: {
+        testId,
+        score,
+        passed,
+        fromTier: test.fromTier,
+        toTier: test.toTier,
+        wechatTemplate: {
+          miniprogram: { pagepath: 'pages/parent/notifications/notifications' }
+        }
       }
     })
-    console.log(`[wechat-notify] to=${test.studentId} type=${notifType} testId=${testId} score=${score} passed=${passed}`)
 
     response.json({
       testId,
@@ -395,7 +398,7 @@ router.post('/promotion-test/submit', async (request, response) => {
 // 5. POST /update-from-pk - PK 积分更新
 router.post('/update-from-pk', async (request, response) => {
   try {
-    if (!rankModel || !notificationModel) {
+    if (!rankModel) {
       response.status(500).json({ error: 'models unavailable' })
       return
     }
@@ -422,18 +425,19 @@ router.post('/update-from-pk', async (request, response) => {
       const notifType = delta > 0 ? 'pk_score_gain' : 'pk_score_lose'
       const notifTitle = delta > 0 ? 'PK 积分增加' : 'PK 积分减少'
       const notifContent = `${delta > 0 ? '获胜' : '失利'} ${Math.abs(delta)} 分，当前总积分 ${newScore}`
-      await notificationModel.create({
-        data: {
-          userId: studentId,
-          type: notifType,
-          title: notifTitle,
-          content: notifContent,
-          payload: JSON.stringify({ delta, newScore }),
-          read: false,
-          channel: 'wechat'
+      await createNotification({
+        userId: studentId,
+        type: notifType,
+        title: notifTitle,
+        content: notifContent,
+        payload: {
+          delta,
+          newScore,
+          wechatTemplate: {
+            miniprogram: { pagepath: 'pages/parent/notifications/notifications' }
+          }
         }
       })
-      console.log(`[wechat-notify] to=${studentId} type=${notifType} delta=${delta} newScore=${newScore}`)
     }
 
     response.json({ studentId, delta, newScore })

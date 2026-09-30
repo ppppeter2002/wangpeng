@@ -1,5 +1,7 @@
-import { Router } from 'express'
+import express, { Router } from 'express'
+import { createNotification } from '../lib/notification.js'
 import prisma from '../lib/prisma.js'
+import { getWechatServiceStatus, verifyWechatServiceSignature } from '../lib/wechat-official.js'
 
 export const NOTIFICATION_TYPES = {
   COMMISSION_EARN: 'commission_earn',
@@ -8,7 +10,15 @@ export const NOTIFICATION_TYPES = {
   LESSON_PLAN_COMMENT: 'lesson_plan_comment',
   LESSON_PLAN_APPROVE: 'lesson_plan_approve',
   CLASS_INVITE: 'class_invite',
-  SEASON_RANK: 'season_rank'
+  SEASON_RANK: 'season_rank',
+  ASSIGNMENT_GRADED: 'assignment_graded',
+  REWARD_WINNER: 'reward_winner',
+  REWARD_CLAIMED: 'reward_claimed',
+  PROMOTION_PASSED: 'promotion_passed',
+  PROMOTION_FAILED: 'promotion_failed',
+  PK_SCORE_GAIN: 'pk_score_gain',
+  PK_SCORE_LOSE: 'pk_score_lose',
+  PK_RESULT: 'pk_result'
 } as const
 
 type UserRecord = {
@@ -26,6 +36,10 @@ type NotificationRecord = {
   payload: string | null
   read: boolean
   channel: string
+  deliveryStatus: string
+  deliveryError: string | null
+  externalMessageId: string | null
+  deliveredAt: Date | null
   createdAt: Date
 }
 
@@ -58,25 +72,87 @@ router.post('/send', async (request, response) => {
       return
     }
 
-    const record = await notificationModel.create({
-      data: {
-        userId,
-        type,
-        title,
-        content,
-        payload: payload ?? null,
-        read: false,
-        channel: 'wechat'
-      }
+    const parsedPayload = payload
+      ? (() => {
+          try {
+            return JSON.parse(payload) as Record<string, unknown>
+          } catch {
+            return payload
+          }
+        })()
+      : null
+
+    const record = await createNotification({
+      userId,
+      type,
+      title,
+      content,
+      payload: parsedPayload,
+      channel: 'wechat'
     }) as NotificationRecord
 
-    // TODO（占位）：调用微信服务号模板消息推送（本期先落库+打印日志）
-    console.log(`[wechat-notify] to=${userId} type=${type} title=${title} notificationId=${record.id}`)
-
-    response.status(201).json({ notificationId: record.id })
+    response.status(201).json({
+      notificationId: record.id,
+      deliveryStatus: record.deliveryStatus,
+      deliveryError: record.deliveryError,
+      externalMessageId: record.externalMessageId
+    })
   } catch (error) {
     response.status(500).json({ error: error instanceof Error ? error.message : 'send notification failed' })
   }
+})
+
+router.get('/wechat/config-status', (_request, response) => {
+  response.json(getWechatServiceStatus())
+})
+
+router.get('/wechat/callback', (request, response) => {
+  const signature = String(request.query.signature ?? '')
+  const timestamp = String(request.query.timestamp ?? '')
+  const nonce = String(request.query.nonce ?? '')
+  const echostr = String(request.query.echostr ?? '')
+
+  if (!signature || !timestamp || !nonce || !echostr) {
+    response.status(400).json({ error: 'signature, timestamp, nonce and echostr required' })
+    return
+  }
+
+  if (!getWechatServiceStatus().readyForCallbackVerify) {
+    response.status(503).json({ error: 'wechat service token not configured' })
+    return
+  }
+
+  if (!verifyWechatServiceSignature(signature, timestamp, nonce)) {
+    response.status(403).json({ error: 'invalid wechat signature' })
+    return
+  }
+
+  response.type('text/plain').send(echostr)
+})
+
+router.post('/wechat/callback', express.text({ type: ['text/xml', 'application/xml', 'text/plain'] }), (request, response) => {
+  const signature = String(request.query.signature ?? '')
+  const timestamp = String(request.query.timestamp ?? '')
+  const nonce = String(request.query.nonce ?? '')
+
+  if (!signature || !timestamp || !nonce) {
+    response.status(400).json({ error: 'signature, timestamp and nonce required' })
+    return
+  }
+
+  if (!getWechatServiceStatus().readyForCallbackVerify) {
+    response.status(503).json({ error: 'wechat service token not configured' })
+    return
+  }
+
+  if (!verifyWechatServiceSignature(signature, timestamp, nonce)) {
+    response.status(403).json({ error: 'invalid wechat signature' })
+    return
+  }
+
+  const body = typeof request.body === 'string' ? request.body : ''
+  console.log(`[wechat-service-callback] body=${body}`)
+  response.type('text/plain').send('success')
 })
 
 // 2. GET /list
@@ -111,6 +187,10 @@ router.get('/list', async (request, response) => {
         payload: n.payload,
         read: n.read,
         channel: n.channel,
+        deliveryStatus: n.deliveryStatus,
+        deliveryError: n.deliveryError,
+        externalMessageId: n.externalMessageId,
+        deliveredAt: n.deliveredAt,
         createdAt: n.createdAt
       }))
     })

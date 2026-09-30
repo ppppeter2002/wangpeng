@@ -38,12 +38,13 @@
 - `T-022-prep` 本机 + Cloudflare Tunnel 临时公网化
 - `T-022-step2` Linux 服务器/备案/Nginx/HTTPS/PM2 上线包
 - `T-022-step3` 自有域名 + cloudflared Windows 服务开机自启
+- `T-019-prep` 微信服务号模板消息接入准备
 - `T-021b` `pdf/docx/OCR` 拆题
 
 当前：
 
-- `lastCompleted = T-022-step2`
-- `nextTicket = T-019 (微信服务号资质，等待公众号资质)`
+- `lastCompleted = T-019-prep`
+- `nextTicket = T-019 (微信服务号资质到位后切真模板消息)`
 
 ## 3. 产品需求（核心）
 
@@ -125,7 +126,8 @@ ASK：
 ## 8. 下一步候选工单
 
 - `T-022-step2`（已完成）：Linux 服务器 + 备案指引 + Nginx/HTTPS/pm2 上线包（购买和实名仍需用户执行）
-- `T-019`：微信服务号模板消息（等公众号资质）
+- `T-019-prep`（已完成）：服务号模板消息接入骨架、回调校验入口、投递状态落库、配置清单
+- `T-019`：微信服务号模板消息真发送（等公众号资质 + 模板 ID + 粉丝 openid）
 - 钱包初始化（已完成）：家长注册送 / 充值虚拟佣金，已打通 `market buy`
 
 ## 9. 硬规矩

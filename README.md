@@ -36,6 +36,7 @@ Do not import the repository root.
 ## Production Deployment
 
 - Linux/ICP/Nginx/HTTPS/PM2 guide: `docs/deployment/t022-step2-server-icp-guide.md`
+- WeChat service account template-message prep: `docs/deployment/t019-service-account-prep.md`
 - Deployment templates: `deploy/`
 - Mini program release checklist: `docs/deployment/wechat-mini-program-release.md`
 

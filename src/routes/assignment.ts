@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import prisma from '../lib/prisma.js'
 import { hashQuestion } from '../lib/hash.js'
+import { createNotification } from '../lib/notification.js'
 
 type UserRecord = {
   id: string
@@ -49,8 +50,6 @@ const assignmentModel = prisma.assignment
 const submissionModel = prisma.assignmentSubmission
 const classSubjectModel = prisma.classSubject
 const studentClassModel = prisma.studentClass
-const notificationModel = prisma.notification
-
 const router = Router()
 
 // 1. POST /create - 老师创建作业
@@ -246,7 +245,7 @@ router.post('/:assignmentId/submit', async (request, response) => {
 // 4. POST /:assignmentId/grade - 老师批改打分 + 触发通知
 router.post('/:assignmentId/grade', async (request, response) => {
   try {
-    if (!assignmentModel || !submissionModel || !notificationModel) {
+    if (!assignmentModel || !submissionModel) {
       response.status(500).json({ error: 'models unavailable' })
       return
     }
@@ -286,18 +285,20 @@ router.post('/:assignmentId/grade', async (request, response) => {
     })
 
     // 触发通知
-    await notificationModel.create({
-      data: {
-        userId: studentId,
-        type: 'assignment_graded',
-        title: '作业已批改',
-        content: `作业「${assignment.title}」已批改，得分：${score}`,
-        payload: JSON.stringify({ assignmentId, score, feedback: feedback ?? null }),
-        read: false,
-        channel: 'wechat'
+    await createNotification({
+      userId: studentId,
+      type: 'assignment_graded',
+      title: '作业已批改',
+      content: `作业「${assignment.title}」已批改，得分：${score}`,
+      payload: {
+        assignmentId,
+        score,
+        feedback: feedback ?? null,
+        wechatTemplate: {
+          miniprogram: { pagepath: 'pages/parent/notifications/notifications' }
+        }
       }
     })
-    console.log(`[wechat-notify] to=${studentId} type=assignment_graded assignmentId=${assignmentId} score=${score}`)
 
     response.json({ success: true })
   } catch (error) {

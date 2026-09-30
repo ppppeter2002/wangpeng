@@ -542,6 +542,10 @@ model Notification {
   payload    String?
   read       Boolean  @default(false)
   channel    String   @default("wechat")
+  deliveryStatus String @default("queued")
+  deliveryError  String?
+  externalMessageId String?
+  deliveredAt DateTime?
   createdAt  DateTime @default(now())
   user       User     @relation(fields: [userId], references: [id])
   @@index([userId, read])

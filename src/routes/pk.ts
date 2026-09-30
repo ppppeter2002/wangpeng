@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import prisma from '../lib/prisma.js'
 import { generateQuestions } from '../lib/ai.js'
+import { createNotification } from '../lib/notification.js'
 
 // 段位链：黑铁 → 青铜 → 白银 → 黄金 → 铂金 → 钻石
 const TIERS = ['黑铁', '青铜', '白银', '黄金', '铂金', '钻石']
@@ -27,8 +28,6 @@ const matchModel = prisma.pkMatch
 const roundModel = prisma.pkRound
 const rankModel = prisma.studentRank
 const bankModel = prisma.questionBank
-const notificationModel = prisma.notification
-
 const router = Router()
 
 function tierIndex(tier: string): number { return TIERS.indexOf(tier) }
@@ -244,7 +243,7 @@ router.post('/next-round', async (request, response) => {
 // 5. POST /finish - 结束对局
 router.post('/finish', async (request, response) => {
   try {
-    if (!matchModel || !roundModel || !rankModel || !notificationModel) { response.status(500).json({ error: 'models unavailable' }); return }
+    if (!matchModel || !roundModel || !rankModel) { response.status(500).json({ error: 'models unavailable' }); return }
     const { matchId } = request.body as { matchId?: string }
     if (!matchId) { response.status(400).json({ error: 'matchId required' }); return }
 
@@ -291,14 +290,22 @@ router.post('/finish', async (request, response) => {
       const content = isWinner
         ? `恭喜获胜！比分 ${myScore}:${oppScore}，积分 +${WIN_DELTA}`
         : (winnerId === null ? `本场平局，比分 ${myScore}:${oppScore}，积分不变` : `本场失利，比分 ${myScore}:${oppScore}`)
-      await notificationModel.create({
-        data: {
-          userId: sid, type: 'pk_result', title, content,
-          payload: JSON.stringify({ matchId, winnerId, myScore, oppScore, delta: isWinner ? WIN_DELTA : 0 }),
-          read: false, channel: 'wechat'
+      await createNotification({
+        userId: sid,
+        type: 'pk_result',
+        title,
+        content,
+        payload: {
+          matchId,
+          winnerId,
+          myScore,
+          oppScore,
+          delta: isWinner ? WIN_DELTA : 0,
+          wechatTemplate: {
+            miniprogram: { pagepath: 'pages/parent/notifications/notifications' }
+          }
         }
       })
-      console.log(`[wechat-notify] to=${sid} type=pk_result matchId=${matchId} winner=${isWinner}`)
     }
 
     response.json({
