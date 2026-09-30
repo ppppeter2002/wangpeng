@@ -1,6 +1,6 @@
 {
   "project": "smart-tutor",
-  "lastUpdated": "2026-09-28T11:30:00.0000000+08:00",
+  "lastUpdated": "2026-09-30T11:45:00.0000000+08:00",
   "completedTickets": [
     "T-008b",
     "T-009",
@@ -17,14 +17,15 @@
     "T-020b",
     "T-020c",
     "T-021",
-    "T-022-prep"
+    "T-022-prep",
+    "T-022-step3"
   ],
-  "lastCompleted": "T-022-prep",
+  "lastCompleted": "T-022-step3",
   "devServer": {
     "running": true,
     "port": 3000,
     "note": "tsx watch 自动 reload，/api/health 已升级含 db/ai/timestamp"
   },
-  "nextTicket": "T-022-step2 (买服务器+备案指引，用户手动) / T-019 (微信服务号资质) / T-022-step3 (自有域名+开机自启)",
+  "nextTicket": "T-021b (pdf/docx/OCR 拆题) / 钱包初始化 (家长注册送/充值虚拟佣金) / T-019 (微信服务号资质，等待公众号资质)",
   "scanGuide": "扫描 worklog/ 目录，发现新增 .completed.json 即表示该工单已完成。读取 nextSuggestion 安排下一个工单。"
 }

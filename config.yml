@@ -1,1 +1,7 @@
-{}
+tunnel: smart-tutor
+credentials-file: C:\Users\<YOUR_USER>\.cloudflared\smart-tutor.json
+
+ingress:
+  - hostname: api.bbbpeter2025.top
+    service: http://localhost:3000
+  - service: http_status:404

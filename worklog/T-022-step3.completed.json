@@ -1,0 +1,44 @@
+{
+  "ticketId": "T-022-step3",
+  "title": "自有域名 + cloudflared Windows 服务开机自启",
+  "status": "completed",
+  "completedAt": "2026-09-30T11:45:00+08:00",
+  "project": "smart-tutor",
+  "summary": {
+    "filesChanged": [
+      "config.yml (从空文件改为 named tunnel 模板，固定 hostname=api.bbbpeter2025.top，service=http://localhost:3000)",
+      "run-tunnel.bat (增加 config 路径和 service 安装提示)",
+      "README.md (补 Quick Start、wxapp 导入路径、tunnel 使用说明)",
+      "worklog/status.json (lastCompleted 更新为 T-022-step3，并重排 nextTicket)"
+    ],
+    "filesCreated": [
+      "install-tunnel-service.bat (复制 config 到 %USERPROFILE%\\.cloudflared 并安装 cloudflared Windows 服务)",
+      "uninstall-tunnel-service.bat (卸载 Windows 服务)",
+      "docs/deployment/t022-step3-domain-autostart.md (自有域名、service install、回退路径说明)",
+      "worklog/T-022-step3.completed.json"
+    ],
+    "modelsAdded": [],
+    "endpointsAdded": []
+  },
+  "verification": {
+    "passed": true,
+    "criteria": [
+      "PASS 0 dev server health baseline unchanged",
+      "PASS 1 npm run typecheck 通过",
+      "PASS 2 npm run build 通过",
+      "PASS 3 config.yml 已提供 named tunnel 模板，目标域名为 api.bbbpeter2025.top",
+      "PASS 4 install-tunnel-service.bat / uninstall-tunnel-service.bat 已生成，可用于 Windows 开机自启安装和卸载",
+      "PASS 5 run-tunnel.bat 继续可用于手动运行命名 tunnel"
+    ],
+    "failed": [],
+    "userManualSteps": [
+      "把命名 tunnel 的 credentials JSON 放到 %USERPROFILE%\\.cloudflared\\smart-tutor.json，或按实际文件名修改 config.yml",
+      "以管理员身份运行 D:\\大鹏\\smart-tutor\\install-tunnel-service.bat",
+      "运行 sc query Cloudflared 检查服务状态",
+      "浏览器访问 https://api.bbbpeter2025.top/api/health 验证公网健康检查",
+      "确认微信小程序后端 BASE 指向 https://api.bbbpeter2025.top/api"
+    ]
+  },
+  "backups": [],
+  "nextSuggestion": "优先做 T-021b（pdf/docx/OCR 拆题）或钱包初始化；T-019 继续等待微信服务号/公众号资质。"
+}
