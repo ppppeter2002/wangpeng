@@ -1,0 +1,35 @@
+<view class="page" wx:if="{{me}}">
+  <view class="header">
+    <view class="hello">你好，{{me.nickname || '家长'}}</view>
+    <view class="sub">已绑定 {{children.length}} 个孩子</view>
+  </view>
+
+  <view class="card">
+    <view class="title">绑定学生</view>
+    <view class="card-item" wx:for="{{children}}" wx:key="studentId" bindtap="goChildren">
+      <view class="row">
+        <text>{{item.name || item.studentId}}</text>
+        <text class="pill">{{item.tier}} · {{item.score}}分</text>
+      </view>
+      <view class="muted">关系：{{item.relation}} · 手机：{{item.phone || '未填'}}</view>
+    </view>
+    <view class="empty-tip" wx:if="{{children.length === 0}}">暂未绑定学生，点击下方按钮</view>
+  </view>
+
+  <view class="card" bindtap="goGrades">
+    <view class="title">📊 成绩查询</view>
+    <view class="muted">查看孩子最近作业得分</view>
+  </view>
+  <view class="card" bindtap="goNotifications">
+    <view class="title">🔔 通知中心</view>
+    <view class="muted">老师反馈、段位变动等</view>
+  </view>
+  <view class="card" bindtap="goMarket">
+    <view class="title">🛒 教案市场</view>
+    <view class="muted">购买优秀教案给孩子加餐</view>
+  </view>
+  <view class="btn" bindtap="goChildren">➕ 绑定新学生</view>
+</view>
+<view class="page" wx:elif="{{loading}}">
+  <view class="empty-tip">加载中…</view>
+</view>

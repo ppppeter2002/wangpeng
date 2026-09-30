@@ -1,0 +1,26 @@
+<view class="page">
+  <view class="header">
+    <view class="hello">新建教案</view>
+    <view class="sub">提交后状态为草稿，需在"我的教案"发布</view>
+  </view>
+
+  <view class="card">
+    <view class="label">选择班级</view>
+    <picker mode="selector" range="{{classes}}" range-key="name" bindchange="onClassPick">
+      <view class="text" style="background:#f7f7f9;padding:16rpx 20rpx;border-radius:12rpx;">
+        {{form.classId ? '已选班级' : '点击选择'}}
+      </view>
+    </picker>
+
+    <view class="label" style="margin-top:16rpx;">科目</view>
+    <input class="text" placeholder="如 math" data-field="subject" value="{{form.subject}}" bindinput="onInput" />
+
+    <view class="label" style="margin-top:16rpx;">标题</view>
+    <input class="text" placeholder="如 一元二次方程进阶" data-field="title" value="{{form.title}}" bindinput="onInput" />
+
+    <view class="label" style="margin-top:16rpx;">内容</view>
+    <textarea class="area" placeholder="教案正文" style="height:240rpx;" data-field="content" value="{{form.content}}" bindinput="onInput" />
+
+    <view class="btn" bindtap="submit" style="margin-top:24rpx;">提交</view>
+  </view>
+</view>

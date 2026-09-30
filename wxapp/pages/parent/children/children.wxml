@@ -1,0 +1,25 @@
+<view class="page">
+  <view class="header">
+    <view class="hello">绑定学生</view>
+    <view class="sub">输入孩子的手机号（注册学生账号时所用）</view>
+  </view>
+
+  <view class="card">
+    <view class="label">学生手机号</view>
+    <input class="text" type="number" placeholder="如 13800001234" value="{{bindPhone}}" bindinput="onPhoneInput" />
+    <view class="btn" bindtap="doBind">绑定</view>
+  </view>
+
+  <view class="card">
+    <view class="title">已绑定学生</view>
+    <view class="card-item" wx:for="{{children}}" wx:key="studentId">
+      <view class="row">
+        <text>{{item.name || item.studentId}}</text>
+        <text class="pill">{{item.tier}} · {{item.score}}分</text>
+      </view>
+      <view class="muted">关系：{{item.relation}} · 手机：{{item.phone || '未填'}}</view>
+      <view class="btn btn-ghost" data-id="{{item.studentId}}" bindtap="viewGrades">查看成绩</view>
+    </view>
+    <view class="empty-tip" wx:if="{{children.length === 0}}">暂未绑定学生</view>
+  </view>
+</view>

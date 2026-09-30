@@ -1,0 +1,48 @@
+{
+  "ticketId": "T-015",
+  "title": "学生晋级系统",
+  "status": "completed",
+  "completedAt": "2026-09-24T17:49:55+08:00",
+  "project": "smart-tutor",
+  "devServer": {
+    "running": true,
+    "port": 3000,
+    "jobId": "a051784cee2140f4a20ed8e9aa672da9"
+  },
+  "summary": {
+    "filesChanged": [
+      "prisma/schema.prisma",
+      "src/lib/prisma.ts",
+      "src/server.ts",
+      "src/routes/rank.ts",
+      "src/routes/bank.ts"
+    ],
+    "modelsAdded": [
+      "QuestionBank",
+      "StudentRank",
+      "PromotionTest"
+    ],
+    "endpointsAdded": [
+      "POST /api/rank/init",
+      "GET /api/rank/leaderboard",
+      "POST /api/rank/promotion-test/start",
+      "POST /api/rank/promotion-test/submit",
+      "POST /api/rank/update-from-pk",
+      "POST /api/bank/upload",
+      "GET /api/bank/list"
+    ],
+    "tierChain": "黑铁→青铜→白银→黄金→铂金→钻石",
+    "passThreshold": "60%",
+    "notificationTypesAdded": "promotion_passed / promotion_failed / pk_score_gain / pk_score_lose"
+  },
+  "verification": {
+    "passed": true,
+    "criteria": "8/8 (7标准+1bonus): db push/build/typecheck全过; 建段位201 tier=黑铁; 排行榜含学生; 上传题库201; 查题库5题; 开始测试201题库兜底source=bank; 提交5/5全对score=100 passed=true upgraded=true tier=青铜; PK+15 newScore=115(升级100+PK15); 通知 promotion_passed + pk_score_gain 双触发"
+  },
+  "backups": [
+    "schema.prisma.t015.bak",
+    "prisma.ts.t015.bak",
+    "server.ts.t015.bak"
+  ],
+  "nextSuggestion": "T-016: 可做真实 AI 题目生成（替换占位 console.log）、weakTopics 自动从作业低分反馈回填 StudentRank、跨段位赛季重置、PK 匹配系统；或开始前端 H5 学生端/家长端页面；或做微信服务号 API 真实接入替换占位日志。"
+}

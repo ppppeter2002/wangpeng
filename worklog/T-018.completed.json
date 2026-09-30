@@ -1,0 +1,59 @@
+{
+  "ticketId": "T-018",
+  "title": "腾讯混元 AI 出题接入",
+  "status": "completed",
+  "completedAt": "2026-09-24T19:10:00Z",
+  "project": "smart-tutor",
+  "devServer": {
+    "running": true,
+    "port": 3000
+  },
+  "summary": {
+    "filesChanged": [
+      "src/lib/ai.ts (新建)",
+      "src/routes/rank.ts (改 promotion-test/start)",
+      "src/routes/pk.ts (改 pickQuestions + start/next-round 调用)",
+      "src/routes/ai.ts (新建)",
+      "src/server.ts (挂载 /api/ai)"
+    ],
+    "modelsAdded": [],
+    "endpointsAdded": [
+      "POST /api/ai/generate"
+    ],
+    "keyDesign": [
+      "ai.ts 用 Node 18+ 内置 fetch 调混元 OpenAI 兼容接口，model=hunyuan-turbos-latest，response_format=json_object",
+      "generateQuestions 抛异常码：NO_HUNYUAN_KEY / HUNYUAN_HTTP_xxx / EMPTY_RESPONSE / EMPTY_QUESTIONS",
+      "rank.ts promotion-test/start：try generateQuestions(mode=promotion) → source=ai；catch → 题库兜底 source=bank",
+      "pk.ts pickQuestions(mode)：try generateQuestions(mode=pk-timed/pk-buzz) → AI 题；catch → QuestionBank 随机抽题",
+      "AI 返回非法 JSON → JSON.parse 抛异常 → catch 降级题库",
+      "只读 process.env.HUNYUAN_API_KEY，不碰 .env 文件"
+    ]
+  },
+  "verification": {
+    "passed": true,
+    "criteria": [
+      "1. tsc --noEmit + npm run build 通过",
+      "2. 无 Key 时 promotion-test/start 返回 201 source=bank（题库题），不崩",
+      "3. 无 Key 时 /api/ai/generate 返回 500 {error:NO_HUNYUAN_KEY}（路由已加载，配 Key 时走 AI）",
+      "4. promotion-test/start 无 Key → source=bank ✅（testId=cmufenqgx0001u67kciwj6ruz）",
+      "5. PK start 无 Key → 题库题（T015题1~5 洗牌）；next-round 无 Key → 题库题（洗牌）",
+      "6. AI 非法 JSON → JSON.parse 抛异常 → catch 降级题库（代码结构保证）",
+      "7. 不碰 .env：/api/ai/generate 返回 NO_HUNYUAN_KEY 证明 Key 未写入环境",
+      "8. worklog/T-018.completed.json + status.json 已生成",
+      "--- 有 Key 实网验证（hotrouter.ai 代理 hy3 模型）---",
+      "9. /api/ai/generate 配 Key → 200 source=ai，返回 2 道一元二次方程题（含 options/answer/explanation）",
+      "10. promotion-test/start 配 Key → 201 source=ai，5 道 AI 题",
+      "11. PK start 配 Key → pk-timed 模式返回 5 道 AI 题（语文综合）",
+      "12. PK next-round 配 Key → pk-buzz 模式返回 5 道短题（英语），符合抢答场景",
+      "13. 批改逻辑 normalizeAnswer 兼容 'A' 和 'A. 内容'：A 全对=100，B 对2题=40",
+      "14. 修复：max_tokens 1500→4000（JSON 截断问题），prompt 明确 answer 只填字母"
+    ]
+  },
+  "aiConfig": {
+    "baseUrl": "https://api.hotrouter.ai/v1",
+    "model": "hy3",
+    "note": "通过环境变量 HUNYUAN_BASE_URL / HUNYUAN_MODEL 配置，未修改 .env；官方混元 Ark 端点 401（Key 属 hotrouter 代理）"
+  },
+  "backups": [],
+  "nextSuggestion": "T-018 完成且 AI 实网验证通过。后续方向：1) T-019 微信服务号 API 真实接入；2) T-020 前端页面；3) 题目去重/相似度检测；4) AI 出题质量调优（weakTopics 精准匹配）"
+}

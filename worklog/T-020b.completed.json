@@ -1,0 +1,64 @@
+{
+  "ticketId": "T-020b",
+  "title": "学生端核心三页（多轮辅导 / 晋级测试 / PK 大厅）",
+  "status": "completed",
+  "completedAt": "2026-09-27T15:34:31.6556300+08:00",
+  "project": "smart-tutor",
+  "devServer": {
+    "jobId": "job-1a1bde01c5524f9398c5afe61e9ae94e",
+    "port": 3000,
+    "running": true
+  },
+  "summary": {
+    "filesChanged": [
+      "src/lib/ai.ts",
+      "src/routes/ai.ts",
+      "src/routes/chat.ts",
+      "src/routes/rank.ts",
+      "src/routes/pk.ts",
+      "wxapp/app.json",
+      "wxapp/pages/student/index.js",
+      "wxapp/pages/student/index.wxml"
+    ],
+    "filesAdded": [
+      "wxapp/pages/chat/chat.json",
+      "wxapp/pages/chat/chat.js",
+      "wxapp/pages/chat/chat.wxml",
+      "wxapp/pages/chat/chat.wxss",
+      "wxapp/pages/test/test.json",
+      "wxapp/pages/test/test.js",
+      "wxapp/pages/test/test.wxml",
+      "wxapp/pages/test/test.wxss",
+      "wxapp/pages/pk/pk.json",
+      "wxapp/pages/pk/pk.js",
+      "wxapp/pages/pk/pk.wxml",
+      "wxapp/pages/pk/pk.wxss"
+    ],
+    "endpointsAdded": [
+      "POST /api/chat/dialogue (multi-round tutoring, fallback to fixed replies)",
+      "GET  /api/rank/my/:studentId (tier/score/rank/weakTopics/seasonScore)",
+      "GET  /api/pk/lobby (waiting matches list)",
+      "GET  /api/pk/match/:matchId (single match status poll, replaces WebSocket)",
+      "POST /api/ai/generate mode:'tutor' (题目带详细讲解)"
+    ]
+  },
+  "verification": {
+    "passed": true,
+    "criteria": [
+      "1. tsc --noEmit 通过",
+      "2. npm run build 通过",
+      "3. 多轮对话：连续问 3 轮，AI 回答带上下文（一元二次方程→判别式→具体例子）",
+      "4. 晋级测试：start 出题→submit 批改→passed/upgraded 字段正确返回",
+      "5. PK 全流程：A 发起 waiting→B 加入 matched→start 第1轮→双方 answer→next-round 第2轮→双方 answer→finish 结算→胜方 score +20",
+      "6. GET /rank/my/:studentId 返回 tier/score/rank/weakTopics/seasonScore/tierTotal",
+      "7. GET /pk/lobby 返回 waiting 大厅列表（matched 后从大厅消失）",
+      "8. GET /pk/match/:matchId 返回完整对局状态（status/round/scoreA/scoreB/rounds[].aDone/bDone）",
+      "9. 无 HUNYUAN_API_KEY 时：chat/dialogue 返回 source=fallback；晋级测试 source=bank；PK source=bank",
+      "10. 无 WX_APPID/WX_SECRET 时 wx.login 走 mock openid（T-020a 已验）",
+      "11. 文件结构：37 个文件，新增 chat/test/pk 三页各 4 文件齐全",
+      "12. 小程序 student 页 action-grid 三个按钮正确跳转新页面"
+    ]
+  },
+  "backups": [],
+  "nextSuggestion": "T-020c 家长端：绑学生+看成绩+买教案；老师端：上架教案+布置作业+班级管理。补齐三角色 UI。"
+}

@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "学生中心",
+  "usingComponents": {
+    "chat-box": "/components/chat-box/chat-box"
+  }
+}

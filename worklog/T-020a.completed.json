@@ -1,0 +1,64 @@
+{
+  "ticketId": "T-020a",
+  "title": "微信小程序骨架 + wx.login 后端",
+  "status": "completed",
+  "completedAt": "2026-09-24T20:05:00Z",
+  "project": "smart-tutor",
+  "devServer": {
+    "running": true,
+    "port": 3000
+  },
+  "summary": {
+    "filesChanged": [
+      "prisma/schema.prisma (User 加 openid/wxNickname)",
+      "src/lib/wx.ts (新建, code2Session)",
+      "src/routes/wx.ts (新建, /login /me)",
+      "src/server.ts (挂载 /api/wx)",
+      "wxapp/ (新建, 25个小程序文件)"
+    ],
+    "modelsChanged": [
+      "User: +openid String? @unique, +wxNickname String?"
+    ],
+    "endpointsAdded": [
+      "POST /api/wx/login",
+      "GET /api/wx/me"
+    ],
+    "wxappStructure": [
+      "app.js / app.json / project.config.json (appid=wx5ae1819eb4a87a3d)",
+      "utils/request.js (BASE=http://192.168.0.100:3000/api)",
+      "pages/login/login (wx.login -> /api/wx/login)",
+      "pages/student/index (段位卡 + AI辅导入口 + 排行榜)",
+      "pages/parent/index (绑定学生占位)",
+      "pages/teacher/index (教案/班级/销量占位)",
+      "components/chat-box (调 /api/ai/generate 单轮出题)"
+    ],
+    "keyDesign": [
+      "WX_APPID/WX_SECRET 由启动环境注入，不碰 .env",
+      "code2Session 失败/无配置 → mock openid（不崩）",
+      "按 openid 查 User，无则建（role=body.role||'student', name=wx_后6位）",
+      "token 简版用 userId，前端存 storage",
+      "phone 变更时更新 User.phone"
+    ]
+  },
+  "verification": {
+    "passed": true,
+    "criteria": [
+      "1. tsc --noEmit + npm run build 通过",
+      "2. prisma db push 成功（openid 唯一约束）",
+      "3. POST /api/wx/login 假 code → 200，mock openid=mock_fake_test_code_1，User 已建",
+      "4. 重复登录同 code → 返回同一 userId（openid 去重）",
+      "5. GET /api/wx/me?userId=... → 返回 role/name/openid/rank/parents/students",
+      "6. POST /api/ai/generate → source=ai，AI 出题正常（chat-box 可用）",
+      "7. wxapp/ 25 个文件已生成，project.config.json appid=wx5ae1819eb4a87a3d",
+      "8. 不碰 .env：WX_APPID/WX_SECRET 仅进程环境变量"
+    ]
+  },
+  "wxConfig": {
+    "appid": "wx5ae1819eb4a87a3d",
+    "secret": "已注入进程环境（建议重置）",
+    "baseUrl": "http://192.168.0.100:3000/api",
+    "note": "开发者工具需勾「不校验合法域名/TLS/HTTPS」"
+  },
+  "backups": [],
+  "nextSuggestion": "T-020a 完成。下一步 T-020b：学生端 AI 辅导多轮对话 + 晋级测试页 + PK 大厅。另外建议尽快重置 WX_SECRET。"
+}

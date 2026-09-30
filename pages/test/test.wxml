@@ -1,0 +1,64 @@
+<view class="page">
+  <!-- idle: 开始测试 -->
+  <view class="state idle" wx:if="{{state === 'idle'}}">
+    <view class="rank-card" wx:if="{{rank}}">
+      <view class="rc-tier">{{rank.tier}}</view>
+      <view class="rc-row">积分 {{rank.score}} · 排名 #{{rank.rank || '-'}}</view>
+      <view class="rc-weak" wx:if="{{rank.weakTopics && rank.weakTopics.length > 0}}">
+        弱项：{{rank.weakTopics.join('、')}}
+      </view>
+    </view>
+    <view class="empty-tip" wx:else>
+      <text>未初始化段位，请先在「学生」页点击初始化。</text>
+    </view>
+    <button class="primary-btn" type="primary" bindtap="startTest" loading="{{submitting}}" disabled="{{!rank}}">
+      开始晋级测试 → {{rank ? rank.tier : ''}} → 下一段位
+    </button>
+  </view>
+
+  <!-- testing: 答题中 -->
+  <view class="state testing" wx:if="{{state === 'testing'}}">
+    <view class="test-header">
+      <text>{{test.fromTier}} → {{test.toTier}}</text>
+      <text class="progress">{{curIdx + 1}} / {{test.questions.length}}</text>
+    </view>
+
+    <view class="question-card">
+      <view class="q-title">第 {{curIdx + 1}} 题</view>
+      <view class="q-content">{{test.questions[curIdx].question}}</view>
+      <view class="options" wx:if="{{test.questions[curIdx].options}}">
+        <view wx:for="{{test.questions[curIdx].options}}" wx:key="*this"
+              class="option {{picks[curIdx] === item ? 'selected' : ''}}"
+              data-idx="{{curIdx}}" data-opt="{{item}}"
+              bindtap="pickOption">{{item}}</view>
+      </view>
+      <view class="options free-text" wx:else>
+        <view class="option {{picks[curIdx] === 'A' ? 'selected' : ''}}" data-idx="{{curIdx}}" data-opt="A" bindtap="pickOption">A. 提交答案</view>
+      </view>
+    </view>
+
+    <view class="nav-row">
+      <button class="nav-btn" bindtap="prevQ" disabled="{{curIdx === 0}}">上一题</button>
+      <button class="nav-btn" bindtap="nextQ" disabled="{{curIdx === test.questions.length - 1}}">下一题</button>
+    </view>
+    <button class="primary-btn" type="warn" bindtap="submitTest" loading="{{submitting}}">提交测试</button>
+  </view>
+
+  <!-- result: 结果页 -->
+  <view class="state result" wx:if="{{state === 'result'}}">
+    <view class="result-card">
+      <view class="rs-score">{{result.score}} 分</view>
+      <view class="rs-detail">{{result.correct}}/{{result.total}} 正确</view>
+      <view class="rs-status {{result.passed ? 'passed' : 'failed'}}">
+        {{result.passed ? '🎉 通过' : '😢 未通过'}}
+      </view>
+      <view class="rs-up" wx:if="{{result.upgraded}}">
+        段位升级：{{test.fromTier}} → {{result.newTier}}
+      </view>
+      <view class="rs-up failed-tip" wx:else>
+        针对弱项再来一次，下次稳过！
+      </view>
+    </view>
+    <button class="primary-btn" type="primary" bindtap="retry">再考一次</button>
+  </view>
+</view>

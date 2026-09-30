@@ -1,0 +1,20 @@
+<view class="chat-overlay">
+  <view class="chat-panel">
+    <view class="chat-header">
+      <text>🤖 AI 辅导</text>
+      <text class="close" bindtap="close">✕</text>
+    </view>
+    <scroll-view class="chat-body" scroll-y scroll-into-view="msg-{{messages.length - 1}}">
+      <view class="msg {{item.role}}" wx:for="{{messages}}" wx:key="index" id="msg-{{index}}">
+        <view class="bubble">{{item.content}}</view>
+      </view>
+      <view class="msg ai" wx:if="{{loading}}">
+        <view class="bubble">思考中...</view>
+      </view>
+    </scroll-view>
+    <view class="chat-input">
+      <input class="input" value="{{input}}" bindinput="onInput" placeholder="输入知识点，如：一元二次方程" confirm-type="send" bindconfirm="send" />
+      <button class="send-btn" bindtap="send" disabled="{{loading}}">发送</button>
+    </view>
+  </view>
+</view>

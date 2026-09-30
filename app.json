@@ -1,0 +1,41 @@
+{
+  "pages": [
+    "pages/login/login",
+    "pages/student/index",
+    "pages/parent/index",
+    "pages/parent/children",
+    "pages/parent/grades",
+    "pages/parent/market",
+    "pages/parent/notifications",
+    "pages/teacher/index",
+    "pages/teacher/plans",
+    "pages/teacher/create-plan",
+    "pages/teacher/classes",
+    "pages/teacher/assignments",
+    "pages/teacher/submissions",
+    "pages/chat/chat",
+    "pages/test/test",
+    "pages/pk/pk",
+    "pages/bank/bank-list/bank-list",
+    "pages/bank/bank-upload/bank-upload"
+  ],
+  "window": {
+    "navigationBarTitleText": "Smart Tutor",
+    "navigationBarBackgroundColor": "#4f46e5",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#f5f5f7"
+  },
+  "tabBar": {
+    "color": "#999",
+    "selectedColor": "#4f46e5",
+    "backgroundColor": "#fff",
+    "list": [
+      { "pagePath": "pages/student/index", "text": "学生" },
+      { "pagePath": "pages/parent/index", "text": "家长" },
+      { "pagePath": "pages/teacher/index", "text": "老师" }
+    ]
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json"
+}
+

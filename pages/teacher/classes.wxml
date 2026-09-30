@@ -1,0 +1,16 @@
+<view class="page">
+  <view class="header">
+    <view class="hello">班级管理</view>
+    <view class="sub">点击班级查看/布置作业</view>
+  </view>
+
+  <view class="card" wx:for="{{classes}}" wx:key="id">
+    <view class="row">
+      <text class="title">{{item.name}}</text>
+      <text class="pill">{{item.memberCount}} 人</text>
+    </view>
+    <view class="muted">年级：{{item.grade || '未设'}} · 科目：{{item.subject || '未设'}}</view>
+    <view class="btn btn-ghost" data-id="{{item.id}}" bindtap="viewStudents">布置/查看作业</view>
+  </view>
+  <view class="empty-tip" wx:if="{{classes.length === 0 && !loading}}">尚未建班，请联系管理员分配</view>
+</view>

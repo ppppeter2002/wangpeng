@@ -1,0 +1,10 @@
+services:
+  smart-tutor:
+    build:
+      context: .
+    ports:
+      - "3000:3000"
+    environment:
+      PORT: 3000
+      RUNTIME_AI_MODEL: DeepSeek
+      BUILDER_AI_MODEL: GPT-5.4

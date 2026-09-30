@@ -1,0 +1,50 @@
+{
+  "ticketId": "T-022-prep",
+  "title": "本机 + Cloudflare Tunnel 临时公网化",
+  "status": "completed",
+  "completedAt": "2026-09-28T11:30:00+08:00",
+  "project": "smart-tutor",
+  "devServer": {
+    "running": true,
+    "port": 3000,
+    "note": "tsx watch 自动 reload 已生效，无需手动重启"
+  },
+  "summary": {
+    "filesChanged": [
+      "src/server.ts (加 import healthRoutes + app.use('/api/health', healthRoutes)，删除内联 /api/health 和 /api/health/db，删除未使用的 runtimeModel/builderModel/runtimeProvider/deepSeekApiKey 变量)",
+      "wxapp/utils/request.js (BASE 切换说明注释：本机IP / trycloudflare / 自有域名 三种模式)"
+    ],
+    "filesCreated": [
+      "src/routes/health.ts (GET / 返回 status/db/ai/timestamp + 兼容字段 ok/service/runtimeProvider；GET /db 返回 connected/engine)",
+      "env.example (环境变量模板，不含真实值)",
+      "tunnel.bat (项目根目录，双击启动 cloudflared tunnel --url http://localhost:3000)"
+    ],
+    "modelsAdded": [],
+    "endpointsAdded": [
+      "GET /api/health 升级（从内联抽到独立路由 health.ts，加 db/ai/timestamp 字段，保留旧字段兼容）",
+      "GET /api/health/db 迁移到 health.ts（功能不变）"
+    ]
+  },
+  "verification": {
+    "passed": true,
+    "criteria": [
+      "1. tsc + build 通过（无错误输出）",
+      "2. GET /api/health 返回 200 + { status:'ok', db:true, ai:true, timestamp:'2026-09-28T03:28:55.525Z' } + 兼容字段 ok/service/runtimeProvider 保留",
+      "3. tunnel.bat 已生成在 D:\\大鹏\\smart-tutor\\tunnel.bat（610 字节，含 UTF-8 chcp 65001 头）—— 用户手动双击验证",
+      "4. 浏览器访问 https://xxxx.trycloudflare.com/api/health —— 用户手动双击 tunnel.bat 后验证",
+      "5. 小程序开发者工具改 BASE 为 https://xxxx.trycloudflare.com/api —— 用户手动验证（request.js 已加切换说明注释，支持 app.globalData.baseUrl 动态切换）",
+      "6. worklog/T-022-prep.completed.json + status.json 生成中"
+    ],
+    "failed": [],
+    "userManualSteps": [
+      "下载 cloudflared Windows 版：https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/downloads/",
+      "双击 D:\\大鹏\\smart-tutor\\tunnel.bat",
+      "终端会输出 https://xxxx.trycloudflare.com 临时地址",
+      "浏览器访问 https://xxxx.trycloudflare.com/api/health 验证返回 {status:'ok'}",
+      "小程序 app.js 设置 app.globalData.baseUrl = 'https://xxxx.trycloudflare.com/api' 后真机调试",
+      "把 trycloudflare 地址告诉上游，可远程验证"
+    ]
+  },
+  "backups": [],
+  "nextSuggestion": "T-022-step2：买服务器 + 提交备案指引（用户同步操作，不依赖 Trae）。T-022-step3：自有域名 + cloudflared service install 装成 Windows 服务（开机自启）。完成后可推进 T-019 微信服务号资质落地。"
+}

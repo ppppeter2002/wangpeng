@@ -1,0 +1,42 @@
+.page { padding: 30rpx; }
+.rank-card {
+  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  border-radius: 24rpx;
+  padding: 40rpx;
+  color: #fff;
+  margin-bottom: 30rpx;
+}
+.rank-title { font-size: 26rpx; opacity: 0.8; }
+.rank-tier { font-size: 56rpx; font-weight: bold; margin: 10rpx 0; }
+.rank-score { font-size: 28rpx; opacity: 0.9; }
+.rank-init { font-size: 28rpx; text-decoration: underline; }
+.action-grid {
+  display: flex;
+  gap: 20rpx;
+  margin-bottom: 30rpx;
+}
+.action-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 30rpx 0;
+  background: #fff;
+  border-radius: 16rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0,0,0,0.05);
+}
+.action-emoji { font-size: 48rpx; margin-bottom: 10rpx; }
+.section { background: #fff; border-radius: 16rpx; padding: 30rpx; }
+.section-title { font-size: 30rpx; font-weight: bold; margin-bottom: 20rpx; }
+.lb-item {
+  display: flex;
+  align-items: center;
+  padding: 16rpx 0;
+  border-bottom: 1rpx solid #f0f0f0;
+  font-size: 26rpx;
+}
+.lb-rank { width: 60rpx; color: #4f46e5; font-weight: bold; }
+.lb-name { flex: 1; }
+.lb-tier { color: #666; margin-right: 20rpx; }
+.lb-score { color: #f59e0b; font-weight: bold; }
+.empty { display: flex; justify-content: center; padding-top: 200rpx; color: #999; }

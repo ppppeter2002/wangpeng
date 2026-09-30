@@ -1,0 +1,30 @@
+<view class="page">
+  <!-- 顶部段位小卡片 -->
+  <view class="rank-bar" wx:if="{{rank}}">
+    <text class="rb-tier">{{rank.tier}}</text>
+    <text class="rb-score">积分 {{rank.score}}</text>
+    <text class="rb-rank" wx:if="{{rank.rank}}">排名 #{{rank.rank}}</text>
+  </view>
+  <view class="rank-bar empty" wx:else>
+    <text>未初始化段位</text>
+  </view>
+
+  <!-- 气泡区 -->
+  <scroll-view class="chat-list" scroll-y scroll-top="{{scrollTop}}" enhanced show-scrollbar="{{false}}">
+    <view wx:if="{{messages.length === 0}}" class="placeholder">
+      <text>👋 想问点什么？比如：一元二次方程怎么解？</text>
+    </view>
+    <view wx:for="{{messages}}" wx:key="index" class="bubble-wrap {{item.role === 'user' ? 'me' : 'ai'}}">
+      <view class="bubble {{item.role === 'user' ? 'bubble-me' : 'bubble-ai'}}">{{item.content}}</view>
+    </view>
+    <view wx:if="{{loading}}" class="bubble-wrap ai">
+      <view class="bubble bubble-ai typing">老师正在思考...</view>
+    </view>
+  </scroll-view>
+
+  <!-- 输入栏 -->
+  <view class="input-bar">
+    <input class="input" placeholder="输入问题..." value="{{input}}" bindinput="onInput" confirm-type="send" bindconfirm="send" />
+    <button class="send-btn" size="mini" type="primary" bindtap="send" disabled="{{loading}}">发送</button>
+  </view>
+</view>

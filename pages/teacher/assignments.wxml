@@ -1,0 +1,42 @@
+<view class="page">
+  <view class="header">
+    <view class="hello">布置作业</view>
+    <view class="sub">提交后该班学生可作答</view>
+  </view>
+
+  <view class="card">
+    <view class="label">班级</view>
+    <picker mode="selector" range="{{classes}}" range-key="name" bindchange="onClassPick">
+      <view class="text" style="background:#f7f7f9;padding:16rpx 20rpx;border-radius:12rpx;">
+        {{classId ? '已选班级' : '点击选择'}}
+      </view>
+    </picker>
+
+    <view class="label" style="margin-top:16rpx;">科目</view>
+    <input class="text" placeholder="如 math" data-field="subject" value="{{form.subject}}" bindinput="onInput" />
+
+    <view class="label" style="margin-top:16rpx;">作业标题</view>
+    <input class="text" placeholder="如 第一单元练习" data-field="title" value="{{form.title}}" bindinput="onInput" />
+
+    <view class="label" style="margin-top:16rpx;">作业说明（可选）</view>
+    <textarea class="area" placeholder="作业要求/题型" style="height:160rpx;" data-field="description" value="{{form.description}}" bindinput="onInput" />
+
+    <view class="label" style="margin-top:16rpx;">截止时间（可选，YYYY-MM-DD）</view>
+    <input class="text" placeholder="2026-12-31" data-field="dueAt" value="{{form.dueAt}}" bindinput="onInput" />
+
+    <view class="btn" bindtap="submit" style="margin-top:24rpx;">布置作业</view>
+  </view>
+
+  <view class="card">
+    <view class="title">该班已有作业</view>
+    <view class="card-item" wx:for="{{assignments}}" wx:key="id">
+      <view class="row">
+        <text>{{item.title}}</text>
+        <text class="pill">{{item.status}}</text>
+      </view>
+      <view class="muted">{{item.subject}} · {{item.createdAt}}</view>
+      <view class="btn btn-ghost" data-id="{{item.id}}" bindtap="viewSubmissions">查看提交</view>
+    </view>
+    <view class="empty-tip" wx:if="{{assignments.length === 0}}">尚未布置作业</view>
+  </view>
+</view>

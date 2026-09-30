@@ -1,0 +1,21 @@
+<view class="page">
+  <view class="header">
+    <view class="hello">我的教案</view>
+    <view class="sub">草稿需先发布，发布后可上架市场</view>
+  </view>
+
+  <view class="card" wx:for="{{plans}}" wx:key="id">
+    <view class="row">
+      <text class="title">{{item.title}}</text>
+      <text class="tag {{item.status === 'published' ? '' : 'tag-warn'}}">{{item.status === 'published' ? '已发布' : '草稿'}}</text>
+    </view>
+    <view class="muted">科目：{{item.subject}} · v{{item.version}}</view>
+    <view class="muted">更新：{{item.updatedAt}}</view>
+    <view class="divider"></view>
+    <view class="row">
+      <view class="btn btn-ghost" style="flex:1;margin-right:8rpx;" data-id="{{item.id}}" bindtap="publishPlan">发布</view>
+      <view class="btn" style="flex:1;margin-left:8rpx;" data-id="{{item.id}}" bindtap="listOnMarket">上架</view>
+    </view>
+  </view>
+  <view class="empty-tip" wx:if="{{plans.length === 0 && !loading}}">还没有教案，去首页点"新建教案"</view>
+</view>

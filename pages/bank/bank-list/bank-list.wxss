@@ -1,0 +1,29 @@
+.page { padding: 16rpx; background: #f5f5f7; min-height: 100vh; }
+.header { display: flex; justify-content: space-between; align-items: baseline; padding: 16rpx 8rpx; }
+.header .title { font-size: 36rpx; font-weight: 600; color: #1f2937; }
+.header .sub { font-size: 26rpx; color: #6b7280; }
+
+.filters { display: flex; flex-wrap: wrap; gap: 12rpx; padding: 16rpx 8rpx; background: #fff; border-radius: 16rpx; margin-bottom: 16rpx; }
+.filter-item { padding: 12rpx 24rpx; background: #eef2ff; color: #4f46e5; border-radius: 24rpx; font-size: 26rpx; }
+.filter-input { flex: 1; min-width: 200rpx; padding: 12rpx 24rpx; background: #f3f4f6; border-radius: 24rpx; font-size: 26rpx; }
+
+.empty { text-align: center; padding: 80rpx 32rpx; }
+.empty-text { font-size: 32rpx; color: #6b7280; margin-bottom: 12rpx; }
+.empty-sub { font-size: 26rpx; color: #9ca3af; margin-bottom: 32rpx; }
+.empty-btn { display: inline-block; padding: 16rpx 48rpx; background: #4f46e5; color: #fff; border-radius: 32rpx; font-size: 28rpx; }
+
+.q-item { background: #fff; border-radius: 16rpx; padding: 24rpx; margin-bottom: 16rpx; }
+.q-question { font-size: 30rpx; color: #1f2937; line-height: 1.5; margin-bottom: 12rpx; }
+.q-options { margin: 12rpx 0; padding-left: 24rpx; }
+.q-opt { font-size: 28rpx; color: #4b5563; line-height: 1.6; }
+.q-meta { display: flex; flex-wrap: wrap; gap: 8rpx; margin: 12rpx 0; }
+.q-tag { padding: 4rpx 16rpx; background: #f3f4f6; color: #6b7280; border-radius: 12rpx; font-size: 22rpx; }
+.source-manual { background: #fef3c7; color: #92400e; }
+.source-plan { background: #dbeafe; color: #1e40af; }
+.source-assignment { background: #d1fae5; color: #065f46; }
+.source-doc { background: #ede9fe; color: #5b21b6; }
+.q-answer { margin-top: 12rpx; padding: 8rpx 16rpx; background: #f0fdf4; color: #166534; border-radius: 8rpx; font-size: 26rpx; }
+
+.loading, .end-tip { text-align: center; padding: 24rpx; color: #9ca3af; font-size: 24rpx; }
+
+.float-btn { position: fixed; right: 32rpx; bottom: 64rpx; width: 96rpx; height: 96rpx; line-height: 96rpx; text-align: center; background: #4f46e5; color: #fff; border-radius: 50%; box-shadow: 0 8rpx 24rpx rgba(79, 70, 229, 0.4); font-size: 26rpx; }

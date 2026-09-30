@@ -1,0 +1,17 @@
+[Unit]
+Description=smart-tutor backend
+After=network.target
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/srv/smart-tutor
+Environment=NODE_ENV=production
+Environment=PORT=3000
+ExecStart=/usr/bin/node /srv/smart-tutor/dist/server.js
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+

@@ -1,0 +1,45 @@
+<view class="page">
+  <view class="header">
+    <view class="title">📤 上传拆题</view>
+    <view class="sub">粘贴教案正文或上传 txt/md，AI 自动拆题入库</view>
+  </view>
+
+  <view class="form">
+    <view class="form-row">
+      <text class="label">学科</text>
+      <picker mode="selector" range="{{subjects}}" value="{{subjectIdx}}" bindchange="onSubjectChange">
+        <view class="picker">{{subjects[subjectIdx]}}</view>
+      </picker>
+    </view>
+    <view class="form-row">
+      <text class="label">年级</text>
+      <picker mode="selector" range="{{gradeLevels}}" value="{{gradeIdx}}" bindchange="onGradeChange">
+        <view class="picker">{{gradeIdx >= 0 ? gradeLevels[gradeIdx] + '年级' : '不选'}}</view>
+      </picker>
+    </view>
+    <view class="form-row">
+      <text class="label">章节</text>
+      <input class="input" placeholder="如：第三章 二次方程" value="{{chapter}}" bindinput="onChapterInput"/>
+    </view>
+
+    <view class="textarea-wrap">
+      <textarea class="textarea" placeholder="粘贴教案/教材正文（建议 200~3000 字）..." value="{{text}}" bindinput="onTextInput" maxlength="-1" auto-height/>
+      <view class="char-count">{{text.length}} 字</view>
+    </view>
+
+    <view class="upload-row">
+      <button class="upload-btn" bindtap="onChooseTxt">📂 选 txt/md 文件</button>
+    </view>
+
+    <button class="submit-btn {{submitting ? 'disabled' : ''}}" bindtap="onSubmit" disabled="{{submitting}}">
+      {{submitting ? 'AI 拆题中...' : '🤖 拆题入库'}}
+    </button>
+  </view>
+
+  <view wx:if="{{result}}" class="result-card">
+    <view class="result-title">拆题完成</view>
+    <view class="result-row">✅ 成功入库：<text class="num">{{result.ingested}}</text> 道</view>
+    <view class="result-row">⏭️ 跳过重复：<text class="num">{{result.skipped}}</text> 道</view>
+    <button class="goto-list" bindtap="goList">查看题库列表 →</button>
+  </view>
+</view>

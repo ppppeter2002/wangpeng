@@ -1,0 +1,42 @@
+{
+  "ticketId": "T-014",
+  "title": "作业与成绩",
+  "status": "completed",
+  "completedAt": "2026-09-24T17:14:59+08:00",
+  "project": "smart-tutor",
+  "devServer": {
+    "running": true,
+    "port": 3000,
+    "jobId": "f01874b3a72b49f59b6923ee453292dd"
+  },
+  "summary": {
+    "filesChanged": [
+      "prisma/schema.prisma",
+      "src/lib/prisma.ts",
+      "src/server.ts",
+      "src/routes/assignment.ts"
+    ],
+    "modelsAdded": [
+      "Assignment",
+      "AssignmentSubmission"
+    ],
+    "endpointsAdded": [
+      "POST /api/assignment/create",
+      "GET /api/assignment/:classId/list",
+      "POST /api/assignment/:assignmentId/submit",
+      "POST /api/assignment/:assignmentId/grade",
+      "GET /api/assignment/:assignmentId/submissions",
+      "GET /api/assignment/student/:studentId/grades"
+    ]
+  },
+  "verification": {
+    "passed": true,
+    "criteria": "9/9 (8 标准 + 1 bonus): db push/build/typecheck 全过; 老师建作业201; 非认领老师建作业403; 学生提交201; 重复提交 upsert(同 submissionId); 老师批改打分 score=92 写入; 学生查成绩返回列表; 老师查提交含学生姓名; 批改后触发 Notification 表 assignment_graded 记录; bonus 班级作业列表"
+  },
+  "backups": [
+    "schema.prisma.t014.bak",
+    "prisma.ts.t014.bak",
+    "server.ts.t014.bak"
+  ],
+  "nextSuggestion": "T-015: 可做家长端查子女作业/成绩聚合、班级作业统计、教案-作业联动（基于作业关联教案）；或开始做赛季排名 SEASON_RANK 通知实际触发逻辑；或做微信服务号 API 真实接入替换占位日志。"
+}

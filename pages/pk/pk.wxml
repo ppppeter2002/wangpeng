@@ -1,0 +1,82 @@
+<view class="page">
+  <!-- 段位卡 -->
+  <view class="rank-bar" wx:if="{{rank}}">
+    <text class="rb-tier">{{rank.tier}}</text>
+    <text class="rb-score">积分 {{rank.score}}</text>
+    <text class="rb-rank" wx:if="{{rank.rank}}">排名 #{{rank.rank}}</text>
+  </view>
+
+  <!-- 大厅 -->
+  <view class="state lobby" wx:if="{{state === 'lobby'}}">
+    <button class="primary-btn" type="primary" bindtap="quickMatch">⚔️ 快速匹配</button>
+    <view class="section-title">大厅待匹配（{{lobby.length}}）</view>
+    <view class="lobby-empty" wx:if="{{lobby.length === 0}}">
+      <text>暂无待匹配对局，点上方按钮发起一场吧～</text>
+    </view>
+    <view class="lobby-item" wx:for="{{lobby}}" wx:key="matchId">
+      <text class="li-name">{{item.studentAName || '匿名同学'}}</text>
+      <text class="li-tier">{{item.tierA}}</text>
+      <text class="li-time">{{item.createdAt}}</text>
+    </view>
+    <button class="ghost-btn" bindtap="refreshLobby">刷新</button>
+  </view>
+
+  <!-- 匹配中 -->
+  <view class="state matching" wx:if="{{state === 'matching'}}">
+    <view class="big-tip">🔍 正在为你匹配对手...</view>
+    <view class="hint">同段位 + 同区县优先</view>
+    <button class="ghost-btn" bindtap="cancelMatch">取消</button>
+  </view>
+
+  <!-- 对局中 -->
+  <view class="state in-round" wx:if="{{state === 'in-round'}}">
+    <view class="match-header">
+      <text>第 {{round}} 轮{{round === 1 ? '·限时答题' : '·抢答'}}</text>
+      <text class="timer {{timeLeft <= 10 ? 'warning' : ''}}">{{timeLeft}}s</text>
+    </view>
+    <view class="score-row">
+      <text>我 {{myScore}}</text>
+      <text class="vs">VS</text>
+      <text>对手 {{oppScore}}</text>
+    </view>
+
+    <view class="progress">{{curIdx + 1}} / {{questions.length}}</view>
+    <view class="question-card">
+      <view class="q-content">{{questions[curIdx].question}}</view>
+      <view class="options" wx:if="{{questions[curIdx].options}}">
+        <view wx:for="{{questions[curIdx].options}}" wx:key="*this"
+              class="option {{picks[curIdx] === item ? 'selected' : ''}}"
+              data-idx="{{curIdx}}" data-opt="{{item}}"
+              bindtap="pickOption">{{item}}</view>
+      </view>
+    </view>
+
+    <view class="nav-row">
+      <button class="nav-btn" bindtap="prevQ" disabled="{{curIdx === 0}}">上一题</button>
+      <button class="nav-btn" bindtap="nextQ" disabled="{{curIdx === questions.length - 1}}">下一题</button>
+    </view>
+    <button class="primary-btn" type="warn" bindtap="submitAnswers" loading="{{submitting}}">提交本轮答案</button>
+  </view>
+
+  <!-- 等待对手 -->
+  <view class="state wait-opponent" wx:if="{{state === 'wait-opponent'}}">
+    <view class="big-tip">⏳ 等对手提交...</view>
+    <view class="score-row">
+      <text>我 {{myScore}}</text>
+      <text class="vs">VS</text>
+      <text>对手 {{oppScore}}</text>
+    </view>
+    <view class="hint">轮询中，每 3 秒查一次</view>
+  </view>
+
+  <!-- 结算 -->
+  <view class="state finished" wx:if="{{state === 'finished'}}">
+    <view class="result-card">
+      <view class="rs-title">{{finalResult.isDraw ? '🤝 平局' : (finalResult.isWinner ? '🎉 获胜' : '😢 失利')}}</view>
+      <view class="rs-score">我 {{finalResult.myScore}} : 对手 {{finalResult.oppScore}}</view>
+      <view class="rs-delta" wx:if="{{finalResult.isWinner}}">积分 +{{finalResult.delta}}</view>
+      <view class="rs-delta" wx:else>积分不变</view>
+    </view>
+    <button class="primary-btn" type="primary" bindtap="backToLobby">回到大厅</button>
+  </view>
+</view>

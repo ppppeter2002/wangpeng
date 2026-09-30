@@ -1,0 +1,30 @@
+<view class="page" wx:if="{{me}}">
+  <view class="header">
+    <view class="hello">{{me.nickname || '老师'}}</view>
+    <view class="sub">教案 {{planCount}} · 班级 {{classCount}} · 佣金 ¥{{commissionBalance}}</view>
+  </view>
+
+  <view class="card" bindtap="goCreatePlan">
+    <view class="title">📝 新建教案</view>
+    <view class="muted">编写教案草稿，发布后可上架市场</view>
+  </view>
+  <view class="card" bindtap="goPlans">
+    <view class="title">📚 我的教案</view>
+    <view class="muted">发布、上架、查看版本</view>
+  </view>
+  <view class="card" bindtap="goClasses">
+    <view class="title">👥 班级管理</view>
+    <view class="muted">我的班级及成员</view>
+  </view>
+  <view class="card" bindtap="goAssignments">
+    <view class="title">📋 布置作业</view>
+    <view class="muted">为班级布置作业、查看提交</view>
+  </view>
+  <view class="card" bindtap="goSubmissions">
+    <view class="title">✅ 批改作业</view>
+    <view class="muted">查看提交并打分</view>
+  </view>
+</view>
+<view class="page" wx:elif="{{loading}}">
+  <view class="empty-tip">加载中…</view>
+</view>

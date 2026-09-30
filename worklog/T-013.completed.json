@@ -1,0 +1,52 @@
+{
+  "ticketId": "T-013",
+  "title": "微信通知系统",
+  "status": "completed",
+  "completedAt": "2026-09-24T17:00:28.7676853+08:00",
+  "project": "D:\\大鹏\\smart-tutor",
+  "devServer": {
+    "running": true,
+    "port": 3000,
+    "jobId": "58f59c0a9b82431d8a46c0066f9bf16c",
+    "healthCheck": "http://localhost:3000/api/health"
+  },
+  "summary": {
+    "filesChanged": [
+      "prisma/schema.prisma",
+      "src/lib/prisma.ts",
+      "src/routes/notification.ts",
+      "src/server.ts"
+    ],
+    "modelsAdded": [
+      "Notification"
+    ],
+    "endpointsAdded": [
+      "POST /api/notification/send",
+      "GET /api/notification/list",
+      "POST /api/notification/read",
+      "POST /api/notification/read-all",
+      "GET /api/notification/unread-count"
+    ],
+    "constants": [
+      "NOTIFICATION_TYPES (7种: commission_earn/spend, lesson_plan_sold/comment/approve, class_invite, season_rank)"
+    ]
+  },
+  "verification": {
+    "passed": 35,
+    "failed": 0,
+    "criteria": [
+      "prisma db push 成功",
+      "build + typecheck 通过",
+      "发送通知 201 + 落库",
+      "列表按时间降序",
+      "未读数计数",
+      "标记已读 + 权限校验",
+      "全部已读 + 未读归零",
+      "7种常量齐全"
+    ]
+  },
+  "backups": [
+    ".t013.bak"
+  ],
+  "nextSuggestion": "可继续 T-014"
+}

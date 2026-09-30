@@ -1,0 +1,55 @@
+{
+  "ticketId": "T-021",
+  "title": "题库汇聚（第一档：教案+作业+txt/md）",
+  "status": "completed",
+  "completedAt": "2026-09-28T00:30:00+08:00",
+  "project": "smart-tutor",
+  "devServer": {
+    "running": true,
+    "port": 3000,
+    "jobId": "to-be-restarted-with-key"
+  },
+  "summary": {
+    "filesChanged": [
+      "prisma/schema.prisma (QuestionBank 新增 source/sourceRef/chapter/gradeLevel/questionType/parsedAt/hash + @@unique([hash]))",
+      "src/lib/prisma.ts (questionBank 类型签名扩 upsert/findUnique/update/count)",
+      "src/routes/bank.ts (重写：保留 /upload + /list，新增 /ingest-plan + /ingest-text，增强 /list 加分页+source/gradeLevel/chapter 筛选)",
+      "src/routes/assignment.ts (POST /create 加可选 questions 字段，作业题目同步写 QuestionBank source=assignment)",
+      "wxapp/app.json (pages 加 bank-list + bank-upload 2 项)",
+      "wxapp/pages/teacher/index.wxml (加'📚 题库管理'navigator 入口)"
+    ],
+    "filesCreated": [
+      "src/lib/hash.ts (hashQuestion 简单指纹，不引 crypto)",
+      "src/routes/bank.ts (重写版本)",
+      "wxapp/pages/bank/bank-list/bank-list.{js,json,wxml,wxss} (题库列表+筛选+分页)",
+      "wxapp/pages/bank/bank-upload/bank-upload.{js,json,wxml,wxss} (粘贴/上传 txt/md → AI 拆题入库)"
+    ],
+    "modelsAdded": [],
+    "endpointsAdded": [
+      "POST /api/bank/ingest-plan (教案 planId → 读 LessonPlan.content → AI 拆题 → hash 去重入库)",
+      "POST /api/bank/ingest-text (粘贴文本 + 学科/年级/章节 → AI 拆题 → hash 去重入库)",
+      "GET /api/bank/list 增强 (分页 + source/gradeLevel/chapter 筛选 + total 计数)"
+    ],
+    "endpointsModified": [
+      "POST /api/assignment/create (加可选 questions 数组，body 有就用题目入库；没有就把 title 当 essay 题入库；返回 bankIngested/bankSkipped)",
+      "POST /api/bank/upload (加 hash 去重，已存在返回 skipped=true + 已有 questionId)",
+      "GET /api/bank/list (分页 + 筛选 + 返回 source/sourceRef/chapter/gradeLevel/questionType/parsedAt/hash)"
+    ]
+  },
+  "verification": {
+    "passed": true,
+    "criteria": [
+      "1. tsc + build 通过（无错误输出）",
+      "2. prisma db push 成功（hash 唯一索引建好，hash String? 可空以兼容历史数据）",
+      "3. 粘贴一篇 txt 教案（一元二次方程） → AI 拆出 7 道题入库（ingested=7 skipped=0）",
+      "4. 用 /bank/upload 上传同一道题 → 返回 skipped=true + 已有 questionId（hash 去重生效）",
+      "5. 布置作业带 2 道 questions → bankIngested=2，source=assignment，sourceRef=assignmentId 正确关联",
+      "6. 无 HUNYUAN_API_KEY 时 /api/rank/promotion-test/start → source='bank'，5 道题从题库抽取（含验收 3/5 入库的题）",
+      "7. 无 HUNYUAN_API_KEY 时 /api/bank/ingest-text → HTTP 500 + { error: 'AI 未配置（HUNYUAN_API_KEY 未注入）' }，不崩",
+      "8. worklog/T-021.completed.json + status.json 生成中"
+    ],
+    "failed": []
+  },
+  "backups": [],
+  "nextSuggestion": "T-021b 可选：pdf/docx 解析 + OCR 图片拆题（当前工单明确不做，留后续）。题库已有 14+ 道题，PK/晋级测试降级路径已验证可抽到题。下一步可推进 T-019 微信服务号资质落地，或 T-022 部署上线（dev server + 反向代理 + 生产 Prisma migrate）。"
+}

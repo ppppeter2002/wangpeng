@@ -1,0 +1,40 @@
+{
+  "ticketId": "T-016",
+  "project": "smart-tutor",
+  "backups": [
+    "无 .bak 残留"
+  ],
+  "completedAt": "2026-09-24T18:22:30Z",
+  "nextSuggestion": "T-017 闭环方向：真实 AI 题目生成、PK 实时推送(WebSocket)、weakTopics 自动回填、家长端查看子女 PK 战绩",
+  "verification": {
+    "criteria": "12/12 全过：health + A创建匹配waiting + B匹配matched + start ongoing + A答题100 + B答题bothDone + next-round + r2双方提交 + finish winner+积分 + 胜方+20 + pk_result通知 + history",
+    "passed": true
+  },
+  "summary": {
+    "filesChanged": [
+      "prisma/schema.prisma",
+      "src/lib/prisma.ts",
+      "src/routes/pk.ts (new)",
+      "src/server.ts"
+    ],
+    "endpointsAdded": [
+      "POST /api/pk/match",
+      "POST /api/pk/start",
+      "POST /api/pk/answer",
+      "POST /api/pk/next-round",
+      "POST /api/pk/finish",
+      "GET /api/pk/history"
+    ],
+    "modelsAdded": [
+      "PkMatch",
+      "PkRound"
+    ]
+  },
+  "devServer": {
+    "running": true,
+    "jobId": "job-328d18a203684788bd9d292cf5de212d",
+    "port": 3000
+  },
+  "status": "completed",
+  "title": "PK 匹配对战系统（完整版 6 端点）"
+}

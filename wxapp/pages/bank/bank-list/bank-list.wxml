@@ -1,0 +1,45 @@
+<view class="page">
+  <view class="header">
+    <view class="title">📚 题库管理</view>
+    <view class="sub">共 {{total}} 道</view>
+  </view>
+
+  <view class="filters">
+    <picker mode="selector" range="{{subjects}}" value="{{subjectIdx}}" bindchange="onSubjectChange">
+      <view class="filter-item">{{subjectIdx >= 0 ? subjects[subjectIdx] : '学科'}}</view>
+    </picker>
+    <picker mode="selector" range="{{sources}}" value="{{sourceIdx}}" bindchange="onSourceChange">
+      <view class="filter-item">{{sourceIdx >= 0 ? sources[sourceIdx] : '来源'}}</view>
+    </picker>
+    <picker mode="selector" range="{{gradeLevels}}" value="{{gradeIdx}}" bindchange="onGradeChange">
+      <view class="filter-item">{{gradeIdx >= 0 ? gradeLevels[gradeIdx] + '年级' : '年级'}}</view>
+    </picker>
+    <input class="filter-input" placeholder="章节" value="{{chapter}}" bindinput="onChapterInput" bindconfirm="onChapterSearch"/>
+  </view>
+
+  <view wx:if="{{list.length === 0 && !loading}}" class="empty">
+    <view class="empty-text">题库还是空的</view>
+    <view class="empty-sub">先去上传教案或文本 →</view>
+    <button class="empty-btn" bindtap="goUpload">去上传</button>
+  </view>
+
+  <view wx:for="{{list}}" wx:key="id" class="q-item">
+    <view class="q-question">{{index + 1}}. {{item.question}}</view>
+    <view wx:if="{{item.options}}" class="q-options">
+      <view wx:for="{{item.options}}" wx:for-item="opt" wx:key="*this" class="q-opt">{{opt}}</view>
+    </view>
+    <view class="q-meta">
+      <text class="q-tag">{{item.subject}}</text>
+      <text class="q-tag">{{item.topic}}</text>
+      <text class="q-tag">难度{{item.difficulty}}</text>
+      <text class="q-tag source-{{item.source}}">{{item.source}}</text>
+      <text wx:if="{{item.chapter}}" class="q-tag">{{item.chapter}}</text>
+    </view>
+    <view class="q-answer">答案：{{item.answer}}</view>
+  </view>
+
+  <view wx:if="{{loading}}" class="loading">加载中...</view>
+  <view wx:if="{{list.length > 0 && list.length >= total}}" class="end-tip">已全部加载</view>
+
+  <view class="float-btn" bindtap="goUpload">+ 上传</view>
+</view>

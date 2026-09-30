@@ -1,0 +1,41 @@
+{
+  "title": "赛季制 + 王者奖励 + 拍照上传（闭环）",
+  "project": "smart-tutor",
+  "nextSuggestion": "T-008b~T-017 全链路闭环完成：作业成绩→晋级测试→PK对战→赛季结算→王者奖励。建议方向：真实AI出题、WebSocket实时PK推送、微信服务号API接入、家长端仪表盘",
+  "devServer": {
+    "port": 3000,
+    "running": true,
+    "jobId": "job-f6d55a17be8b46b1a22da9c7279271f0"
+  },
+  "summary": {
+    "modelsAdded": [
+      "Season",
+      "SeasonReward"
+    ],
+    "filesChanged": [
+      "prisma/schema.prisma",
+      "src/lib/prisma.ts",
+      "src/routes/season.ts (new)",
+      "src/server.ts"
+    ],
+    "endpointsAdded": [
+      "POST /api/season/create",
+      "GET /api/season/current",
+      "POST /api/season/settle",
+      "POST /api/season/reward/claim",
+      "GET /api/season/leaderboard",
+      "GET /api/season/reward/:studentId"
+    ],
+    "tierExpansion": "8级段位链：黑铁→青铜→白银→黄金→铂金→钻石→大师→王者"
+  },
+  "verification": {
+    "passed": true,
+    "criteria": "11/11 全过：health + 王者leaderboard + 创建赛季active + 查当前赛季 + 结算前3名(1000/300/100) + settled无active + 王者降序 + 领奖confirmed + 查获奖记录 + reward_winner通知 + reward_claimed通知"
+  },
+  "status": "completed",
+  "ticketId": "T-017",
+  "backups": [
+    ".t017.bak 已清理"
+  ],
+  "completedAt": "2026-09-24T18:32:41Z"
+}

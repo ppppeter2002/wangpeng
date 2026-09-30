@@ -1,0 +1,638 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                 String                  @id @default(cuid())
+  phone              String?                 @unique
+  passwordHash       String?
+  role               String
+  name               String?
+  openid             String?                 @unique
+  wxNickname         String?
+  inviteCode         String                  @unique
+  invitedBy          String?
+  parentId           String?
+  classId            String?
+  schoolId           String?
+  createdAt          DateTime                @default(now())
+  parentProfile      Parent?
+  parent             User?                   @relation("ParentChild", fields: [parentId], references: [id])
+  children           User[]                  @relation("ParentChild")
+  classRelation      Class?                  @relation("ClassStudents", fields: [classId], references: [id])
+  inviter            User?                   @relation("InviteChain", fields: [invitedBy], references: [id])
+  invitees           User[]                  @relation("InviteChain")
+  school             School?                 @relation("TeacherSchool", fields: [schoolId], references: [id])
+  creditPacks        CreditPack[]
+  subscriptions      Subscription[]
+  usageQuota         UsageQuota[]
+  inviteLinks        InviteLink[]            @relation("InviteLinkOwner")
+  classSubjects      ClassSubject[]          @relation("ClassSubjectTeacher")
+  subjectChallenges  ClassSubjectChallenge[] @relation("ChallengeChallenger")
+  challengeTargets   ClassSubjectChallenge[] @relation("ChallengeTargetTeacher")
+  commissionWallet   CommissionWallet?
+  commissionTxns     CommissionTxn[]         @relation("CommissionWalletOwner")
+  commissionSpends   CommissionSpend[]
+  lessonPlans        LessonPlan[]            @relation("LessonPlanAuthor")
+  marketSales        LessonPlanMarket[]      @relation("MarketSeller")
+  marketPurchases    LessonPlanPurchase[]    @relation("MarketBuyer")
+  districtSpaces             DistrictSpace[]        @relation("SpaceCreator")
+  districtSpaceMemberships   DistrictSpaceMember[] @relation("SpaceMember")
+  myParents       StudentParent[] @relation("StudentParents")
+  myStudents      StudentParent[] @relation("ParentStudents")
+  joinedClasses   StudentClass[]
+  notifications   Notification[]
+  assignments          Assignment[]          @relation("AssignmentTeacher")
+  assignmentSubmissions AssignmentSubmission[] @relation("SubmissionStudent")
+  studentRank          StudentRank?
+  uploadedQuestions    QuestionBank[]        @relation("QuestionUploader")
+  promotionTests       PromotionTest[]
+  pkMatchesAsA         PkMatch[]             @relation("PKMatchA")
+  pkMatchesAsB         PkMatch[]             @relation("PKMatchB")
+  seasonRewards        SeasonReward[]
+}
+
+model PkMatch {
+  id            String   @id @default(cuid())
+  districtId    String?
+  tierA         String
+  tierB         String
+  studentAId    String
+  studentBId    String?
+  status        String   @default("waiting")
+  round         Int      @default(1)
+  scoreA        Int      @default(0)
+  scoreB        Int      @default(0)
+  winnerId      String?
+  questions     String   @default("[]")
+  createdAt     DateTime @default(now())
+  finishedAt    DateTime?
+  studentA      User     @relation("PKMatchA", fields: [studentAId], references: [id])
+  studentB      User?    @relation("PKMatchB", fields: [studentBId], references: [id])
+  rounds        PkRound[]
+  @@index([districtId, tierA, status])
+  @@index([studentAId])
+  @@index([studentBId])
+}
+
+model PkRound {
+  id            String   @id @default(cuid())
+  matchId       String
+  round         Int
+  questions     String
+  answersA      String?
+  answersB      String?
+  scoreA        Int      @default(0)
+  scoreB        Int      @default(0)
+  completedAt   DateTime?
+  match         PkMatch  @relation(fields: [matchId], references: [id])
+  @@index([matchId, round])
+}
+
+model Season {
+  id            String   @id @default(cuid())
+  name          String
+  seasonMonth   String   @unique
+  status        String   @default("active")
+  startedAt     DateTime @default(now())
+  endedAt       DateTime?
+  rewardFirst    Int      @default(1000)
+  rewardSecond   Int      @default(300)
+  rewardThird    Int      @default(100)
+  rewards        SeasonReward[]
+  @@index([status])
+}
+
+model SeasonReward {
+  id            String   @id @default(cuid())
+  seasonId      String
+  studentId     String
+  rank          Int
+  amount        Int
+  contactName   String?
+  contactPhone  String?
+  photoUrl      String?
+  status        String   @default("pending")
+  claimedAt     DateTime?
+  createdAt     DateTime @default(now())
+  season        Season   @relation(fields: [seasonId], references: [id])
+  student       User     @relation(fields: [studentId], references: [id])
+  @@unique([seasonId, rank])
+  @@index([studentId])
+}
+
+model School {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  creatorId String?
+  createdAt DateTime @default(now())
+  grades    Grade[]
+  classes   Class[]
+  teachers  User[]   @relation("TeacherSchool")
+}
+
+model Grade {
+  id       String  @id @default(cuid())
+  schoolId String
+  level    Int
+  school   School  @relation(fields: [schoolId], references: [id])
+  classes  Class[] @relation("GradeClasses")
+}
+
+model Class {
+  id                String         @id @default(cuid())
+  schoolId          String?
+  gradeId           String?
+  teacherId         String?
+  name              String
+  grade             String?
+  subject           String?
+  homeroomTeacherId String?
+  actingHomeroomId  String?
+  school            School?        @relation(fields: [schoolId], references: [id])
+  gradeRef          Grade?         @relation("GradeClasses", fields: [gradeId], references: [id])
+  students          User[]         @relation("ClassStudents")
+  legacyStudents    Student[]
+  subjects          ClassSubject[]
+  lessonPlans       LessonPlan[]
+  studentClasses    StudentClass[]
+  assignments       Assignment[]
+  createdAt         DateTime       @default(now())
+
+  @@index([teacherId])
+  @@unique([schoolId, name])
+}
+
+model ClassSubject {
+  id         String                  @id @default(cuid())
+  classId    String
+  subject    String
+  teacherId  String
+  class      Class                   @relation(fields: [classId], references: [id])
+  teacher    User                    @relation("ClassSubjectTeacher", fields: [teacherId], references: [id])
+  challenges ClassSubjectChallenge[]
+
+  @@unique([classId, subject])
+  @@index([teacherId])
+}
+
+model ClassSubjectChallenge {
+  id                 String       @id @default(cuid())
+  classSubId         String
+  challengerId       String
+  targetTeacherId    String
+  claimedTeacherName String
+  votesYes           Int          @default(0)
+  votesNo            Int          @default(0)
+  status             String       @default("open")
+  createdAt          DateTime     @default(now())
+  closedAt           DateTime?
+  classSubject       ClassSubject @relation(fields: [classSubId], references: [id])
+  challenger         User         @relation("ChallengeChallenger", fields: [challengerId], references: [id])
+  targetTeacher      User         @relation("ChallengeTargetTeacher", fields: [targetTeacherId], references: [id])
+
+  @@index([classSubId, status])
+}
+
+model Student {
+  id                String             @id @default(cuid())
+  classId           String
+  name              String
+  parentId          String?
+  class             Class              @relation(fields: [classId], references: [id])
+  diagnosisSessions DiagnosisSession[]
+}
+
+model Parent {
+  id             String @id @default(cuid())
+  userId         String @unique
+  childHobbies   String
+  childInterests String
+  user           User   @relation(fields: [userId], references: [id])
+}
+
+model ClassTransferLog {
+  id            String   @id @default(cuid())
+  classId       String
+  fromTeacherId String?
+  toTeacherId   String?
+  signedByFrom  String?
+  signedByTo    String?
+  forced        Boolean  @default(false)
+  createdAt     DateTime @default(now())
+}
+
+model ParentCircleProfile {
+  id             String   @id @default(cuid())
+  parentId       String   @unique
+  isOpenToMeet   Boolean  @default(false)
+  parentingStyle String
+  weekendPrefs   String
+  childAgeRange  String
+  createdAt       DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model DiagnosisSession {
+  id         String   @id @default(cuid())
+  studentId  String
+  subject    String
+  imageUrl   String?
+  rawText    String?
+  createdAt  DateTime @default(now())
+  weakPoints String
+  planId     String?
+  student    Student  @relation(fields: [studentId], references: [id])
+}
+
+model Plan {
+  id             String   @id @default(cuid())
+  code           String   @unique
+  name           String
+  summary        String?
+  priceMonth     Int
+  priceYear      Int?
+  textEnabled    Boolean  @default(true)
+  imageEnabled   Boolean  @default(false)
+  voiceEnabled   Boolean  @default(false)
+  ttsEnabled     Boolean  @default(false)
+  contentPack    String   @default("[]")
+  photoPerDay    Int      @default(0)
+  voiceMinPerDay Int      @default(0)
+  ttsCharPerDay  Int      @default(0)
+  isEducational  Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model Subscription {
+  id               String   @id @default(cuid())
+  userId           String
+  planCode         String
+  status           String   @default("active")
+  startedAt        DateTime @default(now())
+  expiresAt        DateTime
+  autoRenew        Boolean  @default(false)
+  renewNotifiedAt  DateTime?
+  cancelledAt      DateTime?
+  createdAt        DateTime @default(now())
+  user             User     @relation(fields: [userId], references: [id])
+
+  @@unique([userId])
+}
+
+model UsageQuota {
+  id               String   @id @default(cuid())
+  userId           String
+  photoUsedToday   Int      @default(0)
+  voiceUsedToday   Int      @default(0)
+  ttsCharUsedToday Int      @default(0)
+  quotaDate        DateTime @default(now())
+  user             User     @relation(fields: [userId], references: [id])
+
+  @@unique([userId])
+}
+
+model CreditPack {
+  id          String   @id @default(cuid())
+  userId      String
+  amount      Int
+  used        Int      @default(0)
+  purchasedAt DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id])
+}
+
+model PlanSession {
+  id           String   @id @default(cuid())
+  studentId    String
+  diagnosisId  String?
+  weakPoints   String
+  planType     String
+  totalMinutes Int
+  content      String
+  createdAt     DateTime @default(now())
+}
+
+model Report {
+  id          String   @id @default(cuid())
+  studentId   String
+  diagnosisId String?
+  planId      String?
+  role        String
+  title       String
+  content     String
+  createdAt   DateTime @default(now())
+}
+
+model InviteLink {
+  id         String   @id @default(cuid())
+  ownerId    String
+  roleTarget String
+  code       String   @unique
+  usedCount  Int      @default(0)
+  createdAt  DateTime @default(now())
+  owner      User     @relation("InviteLinkOwner", fields: [ownerId], references: [id])
+
+  @@index([ownerId])
+}
+
+model CommissionWallet {
+  userId      String   @id
+  balance     Int      @default(0)
+  totalEarned Int      @default(0)
+  updatedAt   DateTime @updatedAt
+  user        User     @relation(fields: [userId], references: [id])
+}
+
+model CommissionTxn {
+  id         String   @id @default(cuid())
+  userId     String
+  fromUserId String
+  amount     Int
+  type       String
+  month      String?
+  createdAt  DateTime @default(now())
+  user       User     @relation("CommissionWalletOwner", fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([fromUserId])
+}
+
+model CommissionSpend {
+  id         String   @id @default(cuid())
+  userId     String
+  amount     Int
+  targetType String
+  targetId   String
+  createdAt  DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+}
+
+model LessonPlan {
+  id            String   @id @default(cuid())
+  authorId      String
+  classId       String
+  subject       String
+  title         String
+  content       String
+  version       Int      @default(1)
+  status        String   @default("draft")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  class         Class    @relation(fields: [classId], references: [id])
+  author        User     @relation("LessonPlanAuthor", fields: [authorId], references: [id])
+  revisions     LessonPlanRevision[]
+  interactions  LessonPlanInteraction[]
+  marketEntry   LessonPlanMarket?      @relation("MarketLessonPlan")
+
+  @@index([authorId])
+  @@index([classId, subject])
+}
+
+model LessonPlanRevision {
+  id            String   @id @default(cuid())
+  lessonPlanId  String
+  version       Int
+  title         String
+  content       String
+  modifierId    String
+  comment       String?
+  createdAt     DateTime @default(now())
+  lessonPlan    LessonPlan @relation(fields: [lessonPlanId], references: [id])
+
+  @@index([lessonPlanId, version])
+}
+
+model LessonPlanInteraction {
+  id            String   @id @default(cuid())
+  lessonPlanId  String
+  userId        String
+  type          String
+  content       String
+  resolved      Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  lessonPlan    LessonPlan @relation(fields: [lessonPlanId], references: [id])
+
+  @@index([lessonPlanId])
+  @@index([userId])
+}
+
+model LessonPlanMarket {
+  id            String   @id @default(cuid())
+  lessonPlanId  String   @unique
+  sellerId      String
+  price         Int
+  status        String   @default("on_sale")
+  soldCount     Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  lessonPlan    LessonPlan @relation("MarketLessonPlan", fields: [lessonPlanId], references: [id])
+  seller        User      @relation("MarketSeller", fields: [sellerId], references: [id])
+  purchases     LessonPlanPurchase[]
+
+  @@index([sellerId])
+  @@index([status])
+}
+
+model LessonPlanPurchase {
+  id            String   @id @default(cuid())
+  marketId      String
+  buyerId       String
+  price         Int
+  createdAt     DateTime @default(now())
+  market        LessonPlanMarket @relation(fields: [marketId], references: [id])
+  buyer         User           @relation("MarketBuyer", fields: [buyerId], references: [id])
+
+  @@unique([marketId, buyerId])
+  @@index([buyerId])
+}
+
+model District {
+  id        String          @id @default(cuid())
+  name      String          @unique
+  city      String
+  createdAt DateTime        @default(now())
+  spaces    DistrictSpace[]
+  @@index([city])
+}
+
+model DistrictSpace {
+  id          String                @id @default(cuid())
+  districtId  String
+  creatorId   String
+  name        String
+  description String?
+  status      String                @default("pending")
+  memberCount Int                   @default(0)
+  createdAt   DateTime              @default(now())
+  updatedAt   DateTime              @updatedAt
+  district    District              @relation(fields: [districtId], references: [id])
+  creator      User                  @relation("SpaceCreator", fields: [creatorId], references: [id])
+  members     DistrictSpaceMember[]
+  hotItems    HotRecommendation[]
+  @@index([districtId])
+  @@index([status])
+}
+
+model DistrictSpaceMember {
+  id       String          @id @default(cuid())
+  spaceId String
+  userId   String
+  role     String          @default("member")
+  joinedAt DateTime       @default(now())
+  space    DistrictSpace   @relation(fields: [spaceId], references: [id])
+  user     User            @relation("SpaceMember", fields: [userId], references: [id])
+  @@unique([spaceId, userId])
+  @@index([userId])
+}
+
+model HotRecommendation {
+  id            String         @id @default(cuid())
+  spaceId       String?
+  targetType    String
+  targetId      String
+  score         Int            @default(0)
+  saleCount     Int            @default(0)
+  interactCount Int            @default(0)
+  rank           Int?
+  category      String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  space         DistrictSpace? @relation(fields: [spaceId], references: [id])
+  @@index([spaceId, targetType])
+  @@index([score])
+}
+
+model StudentParent {
+  id         String   @id @default(cuid())
+  studentId  String
+  parentId   String
+  relation   String   @default("parent")
+  createdAt  DateTime @default(now())
+  student    User     @relation("StudentParents", fields: [studentId], references: [id])
+  parent     User     @relation("ParentStudents", fields: [parentId], references: [id])
+  @@unique([studentId, parentId])
+  @@index([parentId])
+}
+
+model StudentClass {
+  id         String   @id @default(cuid())
+  studentId  String
+  classId    String
+  joinedAt   DateTime @default(now())
+  student    User      @relation(fields: [studentId], references: [id])
+  class      Class     @relation(fields: [classId], references: [id])
+  @@unique([studentId, classId])
+  @@index([classId])
+}
+
+model Notification {
+  id         String   @id @default(cuid())
+  userId     String
+  type       String
+  title      String
+  content    String
+  payload    String?
+  read       Boolean  @default(false)
+  channel    String   @default("wechat")
+  createdAt  DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id])
+  @@index([userId, read])
+  @@index([userId, createdAt])
+}
+
+model Assignment {
+  id            String   @id @default(cuid())
+  classId       String
+  subject       String
+  teacherId     String
+  title         String
+  description   String?
+  dueAt         DateTime?
+  status        String   @default("open")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  class         Class    @relation(fields: [classId], references: [id])
+  teacher       User     @relation("AssignmentTeacher", fields: [teacherId], references: [id])
+  submissions   AssignmentSubmission[]
+  @@index([classId])
+  @@index([teacherId])
+}
+
+model AssignmentSubmission {
+  id            String   @id @default(cuid())
+  assignmentId  String
+  studentId     String
+  content       String?
+  score         Int?
+  feedback      String?
+  submittedAt   DateTime @default(now())
+  gradedAt      DateTime?
+  assignment    Assignment @relation(fields: [assignmentId], references: [id])
+  student       User      @relation("SubmissionStudent", fields: [studentId], references: [id])
+  @@unique([assignmentId, studentId])
+  @@index([studentId])
+  @@index([assignmentId])
+}
+
+model QuestionBank {
+  id           String   @id @default(cuid())
+  teacherId    String
+  subject      String
+  topic        String
+  difficulty   Int
+  question     String
+  answer       String
+  options      String?
+  source       String   @default("manual")  // manual | plan | assignment | doc
+  sourceRef    String?  // planId / assignmentId / docId
+  chapter      String?  // 章节
+  gradeLevel   Int?     // 年级
+  questionType String   @default("single")  // single | multiple | fill | essay
+  parsedAt     DateTime @default(now())
+  hash         String?  // 题目内容 hash，去重（可空以兼容历史数据；新建必填）
+  createdAt    DateTime @default(now())
+  uploader     User     @relation("QuestionUploader", fields: [teacherId], references: [id])
+  @@unique([hash])
+  @@index([subject, topic])
+  @@index([difficulty])
+  @@index([source])
+  @@index([gradeLevel])
+}
+
+model StudentRank {
+  id          String   @id @default(cuid())
+  studentId   String   @unique
+  districtId  String?
+  tier        String   @default("黑铁")
+  tierRank    Int?
+  score       Int      @default(0)
+  weakTopics  String   @default("[]")
+  seasonId    String?
+  updatedAt   DateTime @updatedAt
+  student     User     @relation(fields: [studentId], references: [id])
+  @@index([districtId, tier])
+  @@index([tier, score])
+}
+
+model PromotionTest {
+  id         String   @id @default(cuid())
+  studentId  String
+  fromTier   String
+  toTier     String
+  questions  String
+  source     String
+  passed     Boolean?
+  score      Int?
+  createdAt  DateTime @default(now())
+  finishedAt DateTime?
+  student    User     @relation(fields: [studentId], references: [id])
+  @@index([studentId])
+}

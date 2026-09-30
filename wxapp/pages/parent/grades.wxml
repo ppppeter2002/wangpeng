@@ -1,0 +1,19 @@
+<view class="page">
+  <view class="header">
+    <view class="hello">学生成绩</view>
+    <view class="sub">已批改作业列表，按批改时间倒序</view>
+  </view>
+
+  <view class="card">
+    <view class="title">成绩列表</view>
+    <view class="card-item" wx:for="{{grades}}" wx:key="submissionId">
+      <view class="row">
+        <text>{{item.assignmentTitle || '未命名作业'}}</text>
+        <text class="pill">{{item.score}}分</text>
+      </view>
+      <view class="muted" wx:if="{{item.feedback}}">老师反馈：{{item.feedback}}</view>
+      <view class="muted">批改：{{item.gradedAt}}</view>
+    </view>
+    <view class="empty-tip" wx:if="{{grades.length === 0}}">暂无成绩，等老师批改后会显示</view>
+  </view>
+</view>

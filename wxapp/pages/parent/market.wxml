@@ -1,0 +1,17 @@
+<view class="page">
+  <view class="header">
+    <view class="hello">教案市场</view>
+    <view class="sub">用佣金购买优秀教案</view>
+  </view>
+
+  <view class="card" wx:for="{{listings}}" wx:key="marketId">
+    <view class="row">
+      <text class="title">{{item.title || '未命名教案'}}</text>
+      <text class="tag tag-warn">¥{{item.price}}</text>
+    </view>
+    <view class="muted">科目：{{item.subject}} · 作者：{{item.sellerName || '匿名'}}</view>
+    <view class="muted">已售 {{item.soldCount}} 份</view>
+    <view class="btn" data-id="{{item.marketId}}" bindtap="buy">购买</view>
+  </view>
+  <view class="empty-tip" wx:if="{{listings.length === 0 && !loading}}">市场暂无在售教案</view>
+</view>

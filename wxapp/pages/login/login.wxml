@@ -1,0 +1,26 @@
+<view class="container">
+  <view class="logo">🎓</view>
+  <view class="title">Smart Tutor</view>
+  <view class="subtitle">智能辅导 · 晋级对战</view>
+
+  <view class="role-select">
+    <view class="role-item {{role === 'student' ? 'active' : ''}}" data-role="student" bindtap="selectRole">
+      <text class="role-emoji">📚</text>
+      <text>学生</text>
+    </view>
+    <view class="role-item {{role === 'parent' ? 'active' : ''}}" data-role="parent" bindtap="selectRole">
+      <text class="role-emoji">👨‍👩‍👧</text>
+      <text>家长</text>
+    </view>
+    <view class="role-item {{role === 'teacher' ? 'active' : ''}}" data-role="teacher" bindtap="selectRole">
+      <text class="role-emoji">👨‍🏫</text>
+      <text>老师</text>
+    </view>
+  </view>
+
+  <button class="login-btn" bindtap="onLogin" loading="{{loading}}" disabled="{{loading}}">
+    微信一键登录
+  </button>
+
+  <view class="tip">登录即同意用户协议与隐私政策</view>
+</view>

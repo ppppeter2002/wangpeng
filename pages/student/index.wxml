@@ -1,0 +1,43 @@
+<view class="page" wx:if="{{me}}">
+  <!-- 段位卡片 -->
+  <view class="rank-card">
+    <view class="rank-title">我的段位</view>
+    <view class="rank-tier">{{rank ? rank.tier : '未初始化'}}</view>
+    <view class="rank-score" wx:if="{{rank}}">积分 {{rank.score}}</view>
+    <view class="rank-init" wx:else bindtap="initRank">点击初始化段位</view>
+  </view>
+
+  <!-- 功能入口 -->
+  <view class="action-grid">
+    <view class="action-item" bindtap="goChat">
+      <text class="action-emoji">🤖</text>
+      <text>AI 辅导</text>
+    </view>
+    <view class="action-item" bindtap="goPromotion">
+      <text class="action-emoji">🏆</text>
+      <text>晋级测试</text>
+    </view>
+    <view class="action-item" bindtap="goPK">
+      <text class="action-emoji">⚔️</text>
+      <text>PK 对战</text>
+    </view>
+  </view>
+
+  <!-- 排行榜 -->
+  <view class="section">
+    <view class="section-title">排行榜</view>
+    <view class="lb-item" wx:for="{{leaderboard}}" wx:key="studentId">
+      <text class="lb-rank">{{index + 1}}</text>
+      <text class="lb-name">{{item.studentName || '匿名'}}</text>
+      <text class="lb-tier">{{item.tier}}</text>
+      <text class="lb-score">{{item.score}}</text>
+    </view>
+  </view>
+
+  <!-- AI 对话框 -->
+  <chat-box wx:if="{{showChat}}" bind:close="toggleChat" />
+</view>
+
+<view class="empty" wx:else>
+  <text>加载中...</text>
+</view>

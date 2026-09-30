@@ -1,0 +1,36 @@
+<view class="page">
+  <view class="header">
+    <view class="hello">批改作业</view>
+    <view class="sub">作业ID：{{assignmentId || '未指定'}}</view>
+  </view>
+
+  <block wx:for="{{submissions}}" wx:key="id">
+    <view class="card">
+      <view class="row">
+        <text class="title">{{item.studentName || item.studentId}}</text>
+        <text class="tag {{item.score === null || item.score === undefined ? 'tag-warn' : ''}}">{{item.score === null || item.score === undefined ? '待批改' : item.score + '分'}}</text>
+      </view>
+      <view class="muted">提交：{{item.submittedAt}}</view>
+      <view class="muted" wx:if="{{item.content}}">内容：{{item.content}}</view>
+      <view class="muted" wx:if="{{item.feedback}}">反馈：{{item.feedback}}</view>
+
+      <block wx:if="{{gradingId === item.studentId}}">
+        <view class="divider"></view>
+        <view class="label">分数</view>
+        <input class="text" type="digit" placeholder="如 90" data-field="score" value="{{gradeForm.score}}" bindinput="onInput" />
+        <view class="label" style="margin-top:12rpx;">反馈（可选）</view>
+        <textarea class="area" placeholder="讲解/评语" style="height:140rpx;" data-field="feedback" value="{{gradeForm.feedback}}" bindinput="onInput" />
+        <view class="row" style="margin-top:12rpx;">
+          <view class="btn btn-ghost" style="flex:1;margin-right:8rpx;" bindtap="cancelGrade">取消</view>
+          <view class="btn" style="flex:1;margin-left:8rpx;" bindtap="submitGrade">提交批改</view>
+        </view>
+      </block>
+
+      <view class="btn btn-ghost" wx:if="{{gradingId !== item.studentId}}" data-sid="{{item.studentId}}" bindtap="startGrade">
+        {{item.score === null || item.score === undefined ? '批改' : '改分'}}
+      </view>
+    </view>
+  </block>
+
+  <view class="empty-tip" wx:if="{{submissions.length === 0 && !loading}}">暂无提交</view>
+</view>
